@@ -17,10 +17,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using Nancy;
+using Nancy.Security;
+using System.Dynamic;
 
 namespace raztalk.Modules
 {
     public class ChannelModule : NancyModule
     {
+        public ChannelModule()
+        {
+            Get["/channel/{channel_name}"] = args =>
+            {
+                this.RequiresHttps();
+
+                dynamic model = new ExpandoObject();
+
+                return View["channel", model];
+            };
+        }
     }
 }

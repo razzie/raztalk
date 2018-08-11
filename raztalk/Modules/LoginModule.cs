@@ -17,10 +17,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using Nancy;
+using Nancy.Security;
 
 namespace raztalk.Modules
 {
     public class LoginModule : NancyModule
     {
+        public LoginModule()
+        {
+            Get["/"] = _ =>
+            {
+                this.RequiresHttps();
+
+                return View["login"];
+            };
+        }
     }
 }
