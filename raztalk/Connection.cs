@@ -67,13 +67,15 @@ namespace raztalk
 
         static public Connection Get(string token)
         {
-            WeakReference<Connection> weakconn;
-            Connection connection;
-
-            if (m_connections.TryGetValue(token, out weakconn) && weakconn.TryGetTarget(out connection))
-                return connection;
-            else
+            if (token == null)
                 return null;
+
+            WeakReference<Connection> weakconn = null;
+            Connection connection = null;
+
+            m_connections.TryGetValue(token, out weakconn);
+            weakconn?.TryGetTarget(out connection);
+            return connection;
         }
     }
 }

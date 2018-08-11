@@ -30,13 +30,13 @@ namespace raztalk
             //var listener = (HttpListener)app.Properties["System.Net.HttpListener"];
             //listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
 
+            app.MapSignalR("/signalr", new HubConfiguration());
+
             app.UseNancy((options) =>
             {
                 options.Bootstrapper = new CustomBootstrapper();
                 options.EnableClientCertificates = false;
             });
-
-            app.MapSignalR("/signalr", new HubConfiguration());
         }
     }
 }
