@@ -97,12 +97,18 @@
     <EmbeddedResource Include="Content\scrollreveal.min.js" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connection.cs" />
     <Compile Include="CustomBootstrapper.cs" />
+    <Compile Include="Channel.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="Modules\ChannelHub.cs" />
     <Compile Include="Modules\ChannelModule.cs" />
     <Compile Include="Modules\LoginModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="StaticResourceConventionBuilder.cs" />
+    <Compile Include="TimeoutReference.cs" />
+    <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Content\jquery.oembed.css" />
