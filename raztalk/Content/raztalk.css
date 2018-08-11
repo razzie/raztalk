@@ -1,1 +1,24 @@
-﻿
+﻿body {
+    position: relative;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23808080' fill-opacity='0.5' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+    text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+}
+
+section {
+    display: table;
+    position: relative;
+    width: 100%;
+    min-height: calc(100vh - 32px);
+}
+
+a {
+    color: black;
+    text-decoration: underline;
+    text-decoration-color: rgb(220, 53, 69);
+}
+
+.center {
+    display: table-cell;
+    vertical-align: middle;
+}
