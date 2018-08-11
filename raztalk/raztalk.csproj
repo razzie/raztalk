@@ -36,8 +36,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Views\channel.cshtml" />
-    <None Include="Views\login.cshtml" />
+    <EmbeddedResource Include="Views\channel.cshtml" />
+    <EmbeddedResource Include="Views\login.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Content\raztalk.css" />

@@ -58,7 +58,7 @@ namespace raztalk
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            nancyConventions.StaticContentsConventions.Add(StaticResourceConventionBuilder.AddDirectory("/", assembly, "raztalk.Content"));
+            nancyConventions.StaticContentsConventions.Add(StaticResourceConventionBuilder.AddDirectory("/content", assembly, "raztalk.Content"));
         }
 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)

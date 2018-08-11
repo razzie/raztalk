@@ -44,7 +44,7 @@ namespace raztalk
         public void Close()
         {
             m_connections.Remove(Token);
-            Channel.Logout(User);
+            Channel?.Logout(User);
             User = null;
             Channel = null;
             Token = string.Empty;

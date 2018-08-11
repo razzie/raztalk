@@ -17,20 +17,68 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using Nancy;
+using Nancy.ModelBinding;
+using Nancy.Responses.Negotiation;
 using Nancy.Security;
+using System.Dynamic;
+using System.Text.RegularExpressions;
 
 namespace raztalk.Modules
 {
     public class LoginModule : NancyModule
     {
+        class LoginData
+        {
+            public string User { get; set; }
+            public string Channel { get; set; }
+            public string Password { get; set; }
+        }
+
         public LoginModule()
         {
             Get["/"] = _ =>
             {
                 this.RequiresHttps();
 
-                return View["login"];
+                dynamic model = new ExpandoObject();
+                model.Error = null;
+
+                return View["login", model];
             };
+
+            Post["/"] = ctx =>
+            {
+                this.RequiresHttps();
+
+                var data = this.Bind<LoginData>();
+                string pattern = "^[a-zA-Z0-9_.-]*$";
+
+                if (data.User.Length == 0)
+                    return Fail("Empty username!");
+
+                if (!Regex.IsMatch(data.User, pattern))
+                    return Fail("Invalid username!");
+
+                if (data.Channel.Length == 0)
+                    return Fail("Empty channel!");
+
+                if (!Regex.IsMatch(data.Channel, pattern))
+                    return Fail("Invalid channel!");
+
+                var connection = Connection.Open(data.User, data.Channel, data.Password);
+                if (connection == null)
+                    return Fail("Could not authenticate to channel");
+                
+                Context.Request.Session["connection"] = connection.Token;
+                return Response.AsRedirect("/channel/" + connection.Channel.Name);
+            };
+        }
+
+        private Negotiator Fail(string error)
+        {
+            dynamic model = new ExpandoObject();
+            model.Error = error;
+            return View["login", model];
         }
     }
 }
