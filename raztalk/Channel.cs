@@ -33,6 +33,7 @@ namespace raztalk
             Password = channelpw;
             MaxHistory = 20;
             m_users.Add(creator);
+            m_channels.Add(Name, this);
         }
 
         public string Name { get; private set; }
@@ -51,7 +52,7 @@ namespace raztalk
 
         private bool Login(User user, string password)
         {
-            if (password == Password)
+            if (Password.Equals(password))
             {
                 m_users.Add(user);
                 return true;
@@ -63,6 +64,9 @@ namespace raztalk
         public void Logout(User user)
         {
             m_users.Remove(user);
+
+            if (m_users.Count == 0)
+                m_channels.Remove(Name);
         }
 
         static public Channel Login(User user, string channelname, string channelpw)
