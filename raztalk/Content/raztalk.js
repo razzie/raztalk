@@ -1,4 +1,5 @@
 ﻿$(document).ready(function () {
+    var users_visible = true;
     var token = $("body").data("token");
     var channel = $.connection.channelHub;
 
@@ -17,7 +18,11 @@
     channel.client.sendInfo = function (info) {
         row = "<tr><td></td><td>" + info + "</td></tr>";
         $("#messages tr:last").after(row);
-        $("#messages tr:first").fadeOut("slow");
+
+        if (users_visible) {
+            $("#users").fadeOut("slow");
+            users_visible = false;
+        }
     };
 
     $.connection.hub.start().done(function () {
