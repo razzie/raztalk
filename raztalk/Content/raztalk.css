@@ -23,6 +23,11 @@ a {
     text-decoration-color: rgb(220, 53, 69);
 }
 
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 #message {
     width: 50%;
 }

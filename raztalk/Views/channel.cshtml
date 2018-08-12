@@ -31,14 +31,14 @@
 					{
 						<tr class="reveal">
 							<td>@msg.User.Name</td>
-							<td data-timestamp="@msg.TimestampStr">@msg.Text</td>
+							<td data-timestamp="@msg.TimestampStr"><pre>@msg.Text</pre></td>
 						</tr>
 					}
 				</tbody>
 			</table>
 		</section>
-		<footer class="row justify-content-center text-center reveal">
-			<input type="text" id="message" />
+		<footer class="row m-2 justify-content-center text-center reveal">
+			<textarea id="message" /></textarea>
 		</footer>
 		<script src="/content/jquery.min.js"></script>
 		<script src="/content/jquery.signalR.min.js"></script>
