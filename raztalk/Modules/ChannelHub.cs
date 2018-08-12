@@ -33,7 +33,7 @@ namespace raztalk.Modules
             {
                 m_connections.Add(Context.ConnectionId, connection);
                 Groups.Add(Context.ConnectionId, connection.Channel.Name);
-                Clients.Group(connection.Channel.Name).SendInfo(connection.User.Name + " connected");
+                Clients.Group(connection.Channel.Name, Context.ConnectionId).SendInfo(connection.User.Name + " connected");
                 return true;
             }
 
