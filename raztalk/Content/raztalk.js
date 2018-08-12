@@ -17,7 +17,7 @@
         row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + linkify(message) + "</pre></td></tr>";
         $("#messages tr:last").after(row);
         $("#messages tr:last a").oembed();
-        $.playSound("/content/notification.wav");
+        $.playSound("/content/notification.mp3");
         sr.reveal('.reveal');
         autoscroll();
     };
@@ -25,7 +25,7 @@
         row = "<tr class=\"reveal\"><td></td><td>" + info + "</td></tr>";
         $("#messages tr:last").after(row);
         $("#users").fadeOut("slow", function() { $(this).remove(); });
-        $.playSound("/content/notification.wav");
+        $.playSound("/content/notification.mp3");
         sr.reveal('.reveal');
         autoscroll();
     };
