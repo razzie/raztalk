@@ -15,22 +15,22 @@ namespace raztalk
 {
     public class CustomBootstrapper : DefaultNancyBootstrapper
     {
-        //private byte[] favicon;
+        private byte[] favicon;
 
-        //protected override byte[] FavIcon
-        //{
-        //    get { return this.favicon ?? (this.favicon = LoadFavIcon()); }
-        //}
+        protected override byte[] FavIcon
+        {
+            get { return this.favicon ?? (this.favicon = LoadFavIcon()); }
+        }
 
-        //private byte[] LoadFavIcon()
-        //{
-        //    using (var resourceStream = GetType().Assembly.GetManifestResourceStream("raztalk.Content.favicon.png"))
-        //    {
-        //        var memoryStream = new MemoryStream();
-        //        resourceStream.CopyTo(memoryStream);
-        //        return memoryStream.GetBuffer();
-        //    }
-        //}
+        private byte[] LoadFavIcon()
+        {
+            using (var resourceStream = GetType().Assembly.GetManifestResourceStream("raztalk.Content.favicon.png"))
+            {
+                var memoryStream = new MemoryStream();
+                resourceStream.CopyTo(memoryStream);
+                return memoryStream.GetBuffer();
+            }
+        }
 
         protected override NancyInternalConfiguration InternalConfiguration
         {

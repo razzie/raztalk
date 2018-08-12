@@ -47,9 +47,7 @@ namespace raztalk.Modules
             {
                 Clients.Group(connection.Channel.Name).SendInfo(connection.User.Name + " disconnected");
                 m_connections.Remove(Context.ConnectionId);
-
-                //connection.Close();
-                TimeoutReference.Add(connection, 10000);
+                connection.Close();
             }
         }
 
@@ -69,12 +67,6 @@ namespace raztalk.Modules
         {
             Logout();
             return base.OnDisconnected(stopCalled);
-        }
-
-        public override Task OnReconnected()
-        {
-            Logout();
-            return base.OnReconnected();
         }
     }
 }

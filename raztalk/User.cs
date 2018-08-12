@@ -26,5 +26,7 @@ namespace raztalk
         }
 
         public string Name { get; private set; }
+
+        static public User System { get; set; } = new User(string.Empty);
     }
 }

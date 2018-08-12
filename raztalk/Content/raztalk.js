@@ -5,7 +5,6 @@
 
     function linkify(str) {
         return str.replace(/(<a href=")?((https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)))(">(.*)<\/a>)?/gi, function () {
-
             return '<a href="' + arguments[2] + '">' + (arguments[7] || arguments[2]) + '</a>'
         });
     }
@@ -33,7 +32,10 @@
     };
 
     $.connection.hub.start().done(function () {
-        channel.server.login(token);
+        if (channel.server.login(token) == false) {
+            $("#message").prop("disabled", true);
+            channel.client.sendInfo("Disconnected");
+        }
 
         $("#message").keypress(function (e) {
             if (e.which == 13) {
@@ -43,6 +45,10 @@
                 msg.focus();
             }
         });
+    });
+    $.connection.hub.disconnected(function () {
+        $("#message").prop("disabled", true);
+        channel.client.sendInfo("Disconnected");
     });
 
     $("td").each(function () {
