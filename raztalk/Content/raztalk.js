@@ -1,5 +1,5 @@
 ﻿$(document).ready(function () {
-    var users_visible = true;
+    window.sr = ScrollReveal({ reset: true });
     var token = $("body").data("token");
     var channel = $.connection.channelHub;
 
@@ -14,33 +14,35 @@
     }
 
     channel.client.send = function (user, message, timestamp) {
-        row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\">" + linkify(message) + "</td></tr>";
+        row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + linkify(message) + "</pre></td></tr>";
         $("#messages tr:last").after(row);
         $("#messages tr:last a").oembed();
         $.playSound("/content/notification.wav");
+        sr.reveal('.reveal');
         autoscroll();
     };
     channel.client.sendInfo = function (info) {
         row = "<tr class=\"reveal\"><td></td><td>" + info + "</td></tr>";
         $("#messages tr:last").after(row);
+        $("#users").fadeOut("slow", function() { $(this).remove(); });
         $.playSound("/content/notification.wav");
-        if (users_visible) {
-            $("#users").fadeOut("slow");
-            users_visible = false;
-        }
+        sr.reveal('.reveal');
         autoscroll();
     };
 
     $.connection.hub.start().done(function () {
         if (channel.server.login(token) == false) {
             $("#message").prop("disabled", true);
-            channel.client.sendInfo("Disconnected");
+            channel.client.sendInfo("Connection error");
         }
 
         $("#message").keypress(function (e) {
             if (e.which == 13) {
+                e.preventDefault();
                 msg = $(this);
-                channel.server.send(msg.val());
+                if (msg.val().length > 0) {
+                    channel.server.send(msg.val());
+                }
                 msg.val("");
                 msg.focus();
             }
@@ -51,7 +53,7 @@
         channel.client.sendInfo("Disconnected");
     });
 
-    $("td").each(function () {
+    $("pre").each(function () {
         item = $(this);
         item.html(linkify(item.text()));
     });
@@ -60,6 +62,5 @@
 
     $("#message").focus();
 
-    window.sr = ScrollReveal({ reset: true });
     sr.reveal('.reveal');
 });
