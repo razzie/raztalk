@@ -18,11 +18,13 @@
         row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\">" + linkify(message) + "</td></tr>";
         $("#messages tr:last").after(row);
         $("#messages tr:last a").oembed();
+        $.playSound("/content/notification.wav");
         autoscroll();
     };
     channel.client.sendInfo = function (info) {
         row = "<tr class=\"reveal\"><td></td><td>" + info + "</td></tr>";
         $("#messages tr:last").after(row);
+        $.playSound("/content/notification.wav");
         if (users_visible) {
             $("#users").fadeOut("slow");
             users_visible = false;
