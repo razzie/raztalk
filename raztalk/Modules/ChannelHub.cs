@@ -48,7 +48,7 @@ namespace raztalk.Modules
                 Message message = new Message(connection.User, text);
                 connection.Channel.AddMessage(message);
 
-                Clients.Group(connection.Channel.Name).Send(connection.User.Name, message.Text, message.Timestamp);
+                Clients.Group(connection.Channel.Name).Send(connection.User.Name, message.Text, message.TimestampStr);
             }
         }
 
@@ -59,7 +59,9 @@ namespace raztalk.Modules
             {
                 Clients.Group(connection.Channel.Name).SendInfo(connection.User.Name + " disconnected");
                 m_connections.Remove(Context.ConnectionId);
-                connection.Close();
+
+                //connection.Close();
+                TimeoutReference.Add(connection, 10000);
             }
 
             return base.OnDisconnected(stopCalled);
