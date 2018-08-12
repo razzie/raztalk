@@ -10,19 +10,24 @@
         });
     }
 
+    function autoscroll() {
+        $("html, body").animate({ scrollTop: $(document).height() }, 1000);
+    }
+
     channel.client.send = function (user, message, timestamp) {
-        row = "<tr><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\">" + linkify(message) + "</td></tr>";
+        row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\">" + linkify(message) + "</td></tr>";
         $("#messages tr:last").after(row);
         $("#messages tr:last a").oembed();
+        autoscroll();
     };
     channel.client.sendInfo = function (info) {
-        row = "<tr><td></td><td>" + info + "</td></tr>";
+        row = "<tr class=\"reveal\"><td></td><td>" + info + "</td></tr>";
         $("#messages tr:last").after(row);
-
         if (users_visible) {
             $("#users").fadeOut("slow");
             users_visible = false;
         }
+        autoscroll();
     };
 
     $.connection.hub.start().done(function () {
@@ -33,6 +38,7 @@
                 msg = $(this);
                 channel.server.send(msg.val());
                 msg.val("");
+                msg.focus();
             }
         });
     });
@@ -43,6 +49,8 @@
     });
 
     $("a").oembed();
+
+    $("#message").focus();
 
     window.sr = ScrollReveal({ reset: true });
     sr.reveal('.reveal');
