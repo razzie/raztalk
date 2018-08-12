@@ -40,6 +40,19 @@ namespace raztalk.Modules
             return false;
         }
 
+        private void Logout()
+        {
+            Connection connection;
+            if (m_connections.TryGetValue(Context.ConnectionId, out connection))
+            {
+                Clients.Group(connection.Channel.Name).SendInfo(connection.User.Name + " disconnected");
+                m_connections.Remove(Context.ConnectionId);
+
+                //connection.Close();
+                TimeoutReference.Add(connection, 10000);
+            }
+        }
+
         public void Send(string text)
         {
             Connection connection;
@@ -54,17 +67,14 @@ namespace raztalk.Modules
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            Connection connection;
-            if (m_connections.TryGetValue(Context.ConnectionId, out connection))
-            {
-                Clients.Group(connection.Channel.Name).SendInfo(connection.User.Name + " disconnected");
-                m_connections.Remove(Context.ConnectionId);
-
-                //connection.Close();
-                TimeoutReference.Add(connection, 10000);
-            }
-
+            Logout();
             return base.OnDisconnected(stopCalled);
+        }
+
+        public override Task OnReconnected()
+        {
+            Logout();
+            return base.OnReconnected();
         }
     }
 }
