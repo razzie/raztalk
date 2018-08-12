@@ -65,6 +65,7 @@ namespace raztalk
         {
             base.ApplicationStartup(container, pipelines);
             CookieBasedSessions.Enable(pipelines);
+            StaticConfiguration.DisableErrorTraces = false;
             SSLProxy.RewriteSchemeUsingForwardedHeaders(pipelines);
         }
 

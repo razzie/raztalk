@@ -65,6 +65,9 @@ namespace raztalk.Modules
                 if (!Regex.IsMatch(data.Channel, pattern))
                     return Fail("Invalid channel!");
 
+                if (data.Password == null)
+                    data.Password = string.Empty;
+
                 var connection = Connection.Open(data.User, data.Channel, data.Password);
                 if (connection == null)
                     return Fail("Could not authenticate to channel");
