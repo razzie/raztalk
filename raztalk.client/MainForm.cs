@@ -21,19 +21,19 @@ namespace raztalk.client
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            GotFocus += MainForm_GotFocus;
 
             web.ScriptErrorsSuppressed = true;
-
+            web.Parent = this;
+            web.GotFocus += Web_GotFocus;
             web.DocumentTitleChanged += Web_DocumentTitleChanged;
 
             SHDocVw.WebBrowser wbCOMmain = (SHDocVw.WebBrowser)web.ActiveXInstance;
             wbCOMmain.NewWindow3 += wbCOMmain_NewWindow3;
         }
 
-        private void MainForm_GotFocus(object sender, EventArgs e)
+        private void Web_GotFocus(object sender, EventArgs e)
         {
-            web.Document.Window.Focus();
+            web.Document?.Window.Focus();
         }
 
         private void Web_DocumentTitleChanged(object sender, EventArgs e)
