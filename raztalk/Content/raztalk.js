@@ -1,6 +1,9 @@
 ﻿$(document).ready(function () {
     window.sr = ScrollReveal({ reset: true });
+    var isActive = true;
+    var unread = 0;
     var token = $("body").data("token");
+    var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
 
     String.prototype.trim = function () {
@@ -17,6 +20,15 @@
         $("html, body").animate({ scrollTop: $(document).height() }, 1000);
     }
 
+    $(window).focus(function (event) {
+        isActive = true;
+        unread = 0;
+        document.title = "RazTalk - " + channelname;
+    });
+    $(window).blur(function (event) {
+        isActive = false;
+    });
+
     channel.client.send = function (user, message, timestamp) {
         row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + linkify(message) + "</pre></td></tr>";
         $("#messages tr:last").after(row);
@@ -24,6 +36,10 @@
         $.playSound("/content/notification.mp3");
         sr.reveal('.reveal');
         autoscroll();
+        if (!isActive) {
+            unread += 1;
+            document.title = "(+" + unread + ") RazTalk - " + channelname;
+        }
     };
     channel.client.sendInfo = function (info, timestamp) {
         row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\>" + info + "</td></tr>";
