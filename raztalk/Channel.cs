@@ -55,7 +55,6 @@ namespace raztalk
             if (Password.Equals(password))
             {
                 m_users.Add(user);
-                AddMessage(new Message(User.System, user.Name + " connected"));
                 return true;
             }
 
@@ -65,7 +64,6 @@ namespace raztalk
         public void Logout(User user)
         {
             m_users.Remove(user);
-            AddMessage(new Message(User.System, user.Name + " disconnected"));
 
             if (m_users.Count == 0)
                 m_channels.Remove(Name);

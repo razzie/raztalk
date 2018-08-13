@@ -16,12 +16,22 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
+using Microsoft.AspNet.SignalR;
+using raztalk.Modules;
 using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 
 namespace raztalk
 {
-    public class Connection
+    public class Identity : IIdentity
+    {
+        public string Name { get; set; }
+        public string AuthenticationType { get; set; }
+        public bool IsAuthenticated { get; set; }
+    }
+
+    public class Connection : IPrincipal
     {
         static private Dictionary<string, WeakReference<Connection>> m_connections = new Dictionary<string, WeakReference<Connection>>();
 
@@ -32,6 +42,8 @@ namespace raztalk
             Token = Guid.NewGuid().ToString();
             m_connections.Add(Token, new WeakReference<Connection>(this));
 
+            SendInfo(User.Name + " connected");
+
             // hold a reference to this for 10 seconds, should be enough till SignalR connects
             TimeoutReference.Add(this, 10000);
         }
@@ -41,8 +53,24 @@ namespace raztalk
             Close();
         }
 
+        public void SendMessage(string text)
+        {
+            Message message = new Message(User, text);
+            Channel.AddMessage(message);
+            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
+        }
+
+        public void SendInfo(string info)
+        {
+            Message message = new Message(User.System, info);
+            Channel.AddMessage(message);
+            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).SendInfo(message.Text);
+        }
+
         public void Close()
         {
+            SendInfo(User.Name + " disconnected");
+
             m_connections.Remove(Token);
             Channel?.Logout(User);
             User = null;
@@ -53,6 +81,16 @@ namespace raztalk
         public User User { get; private set; }
         public Channel Channel { get; private set; }
         public string Token { get; private set; }
+
+        public IIdentity Identity
+        {
+            get { return new Identity { Name = Token, AuthenticationType = string.Empty, IsAuthenticated = true }; }
+        }
+
+        public bool IsInRole(string role)
+        {
+            throw new NotImplementedException();
+        }
 
         static public Connection Open(string username, string channelname, string channelpw)
         {
