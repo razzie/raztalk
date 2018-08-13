@@ -59,7 +59,7 @@
         }
 
         $("#message").keypress(function (e) {
-            if (e.which == 13) {
+            if (e.which == 13 && !e.shiftKey) {
                 e.preventDefault();
                 msg = $(this);
                 if (msg.val().length > 0) {
