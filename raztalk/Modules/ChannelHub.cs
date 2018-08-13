@@ -26,6 +26,16 @@ namespace raztalk.Modules
     {
         static private Dictionary<string, Connection> m_connections = new Dictionary<string, Connection>();
 
+        private Connection Connection
+        {
+            get
+            {
+                Connection connection = null;
+                m_connections.TryGetValue(Context.ConnectionId, out connection);
+                return connection;
+            }
+        }
+
         public bool Login(string token)
         {
             Connection connection = Connection.Get(token);
@@ -33,39 +43,22 @@ namespace raztalk.Modules
             {
                 m_connections.Add(Context.ConnectionId, connection);
                 Groups.Add(Context.ConnectionId, connection.Channel.Name);
-                Clients.Group(connection.Channel.Name, Context.ConnectionId).SendInfo(connection.User.Name + " connected");
                 return true;
             }
 
             return false;
         }
 
-        private void Logout()
-        {
-            Connection connection;
-            if (m_connections.TryGetValue(Context.ConnectionId, out connection))
-            {
-                Clients.Group(connection.Channel.Name).SendInfo(connection.User.Name + " disconnected");
-                m_connections.Remove(Context.ConnectionId);
-                connection.Close();
-            }
-        }
-
         public void Send(string text)
         {
-            Connection connection;
-            if (m_connections.TryGetValue(Context.ConnectionId, out connection))
-            {
-                Message message = new Message(connection.User, text);
-                connection.Channel.AddMessage(message);
-
-                Clients.Group(connection.Channel.Name).Send(connection.User.Name, message.Text, message.TimestampStr);
-            }
+             Connection?.SendMessage(text);
         }
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            Logout();
+            Connection?.Close();
+            m_connections.Remove(Context.ConnectionId);
+
             return base.OnDisconnected(stopCalled);
         }
     }
