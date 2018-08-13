@@ -69,6 +69,8 @@
                 msg.focus();
             }
         });
+
+        $("#message").prop("disabled", false);
     });
     $.connection.hub.disconnected(function () {
         $("#message").prop("disabled", true);
