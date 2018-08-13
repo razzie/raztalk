@@ -19,7 +19,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using Nancy;
 using Nancy.Security;
 using System.Dynamic;
-using System.Linq;
 
 namespace raztalk.Modules
 {
@@ -39,9 +38,9 @@ namespace raztalk.Modules
 
                 dynamic model = new ExpandoObject();
                 model.User = connection.User;
-                model.Users = string.Join(", ", connection.Channel.Users.Select(x => x.Name).ToArray());
+                model.Users = connection.Channel.Users.AsString();
                 model.Channel = connection.Channel;
-                model.Token = connection.Token;
+                model.Token = connection.Token.ToString();
 
                 return View["channel", model];
             };

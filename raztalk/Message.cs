@@ -40,5 +40,6 @@ namespace raztalk
         public string Text { get; private set; }
         public DateTime Timestamp { get; private set; }
         public string TimestampStr { get { return Timestamp.ToString("yyyy/MM/dd HH:mm:ss"); } }
+        public bool SystemMessage { get { return User == User.System; } }
     }
 }

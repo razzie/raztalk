@@ -53,13 +53,13 @@ namespace raztalk.Modules
                 var data = this.Bind<LoginData>();
                 string pattern = "^[a-zA-Z0-9_.-]*$";
 
-                if (data.User == null || data.User.Length == 0)
+                if (string.IsNullOrEmpty(data.User))
                     return Fail("Empty username!");
 
                 if (!Regex.IsMatch(data.User, pattern))
                     return Fail("Invalid username!");
 
-                if (data.Channel == null || data.Channel.Length == 0)
+                if (string.IsNullOrEmpty(data.Channel))
                     return Fail("Empty channel!");
 
                 if (!Regex.IsMatch(data.Channel, pattern))
