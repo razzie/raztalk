@@ -23,8 +23,9 @@ td {
     vertical-align: text-top;
 }
 td:first-child {
-    width: 0%;
+    width: 1px;
     padding-right: 2em;
+    text-align: right;
 }
 
 a {
