@@ -35,6 +35,10 @@ namespace raztalk
     {
         static private Dictionary<string, WeakReference<Connection>> m_connections = new Dictionary<string, WeakReference<Connection>>();
 
+        public User User { get; private set; }
+        public Channel Channel { get; private set; }
+        public string Token { get; private set; }
+
         private Connection(User user, Channel channel)
         {
             User = user;
@@ -43,6 +47,7 @@ namespace raztalk
             m_connections.Add(Token, new WeakReference<Connection>(this));
 
             SendInfo(User.Name + " connected");
+            UpdateUsers();
 
             // hold a reference to this for 10 seconds, should be enough till SignalR connects
             TimeoutReference.Add(this, 10000);
@@ -64,23 +69,29 @@ namespace raztalk
         {
             Message message = new Message(User.System, info);
             Channel.AddMessage(message);
-            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).SendInfo(message.Text);
+            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
+        }
+
+        private void UpdateUsers()
+        {
+            string userlist = Channel.Users.AsString();
+            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).UpdateUsers(userlist);
         }
 
         public void Close()
         {
-            SendInfo(User.Name + " disconnected");
+            if (Channel != null)
+            {
+                Channel.Logout(User);
+                SendInfo(User.Name + " disconnected");
+                UpdateUsers();
+            }
 
             m_connections.Remove(Token);
-            Channel?.Logout(User);
             User = null;
             Channel = null;
             Token = string.Empty;
         }
-
-        public User User { get; private set; }
-        public Channel Channel { get; private set; }
-        public string Token { get; private set; }
 
         public IIdentity Identity
         {

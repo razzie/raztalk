@@ -11,10 +11,20 @@ section {
     width: 100%;
 }
 
+table, tbody, tr {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border-spacing: 0;
+}
 td {
-    min-width: 20%;
-    padding-right: 20px;
+    width: 100%;
+    padding-bottom: 0.25em;
     vertical-align: text-top;
+}
+td:first-child {
+    width: 0%;
+    padding-right: 2em;
 }
 
 a {
@@ -26,8 +36,17 @@ a {
 pre {
     white-space: pre-wrap;
     word-wrap: break-word;
+    margin: 0;
 }
 
 #message {
     width: 50%;
+}
+
+.info {
+    font-style: italic;
+    color: darkgray;
+}
+.info pre {
+    color: darkgray;
 }

@@ -16,6 +16,9 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace raztalk
 {
     public class User
@@ -28,5 +31,13 @@ namespace raztalk
         public string Name { get; private set; }
 
         static public User System { get; set; } = new User(string.Empty);
+    }
+
+    public static class UsersExtension
+    {
+        static public string AsString(this IEnumerable<User> users)
+        {
+            return string.Join(", ", users.Select(x => x.Name).ToArray());
+        }
     }
 }
