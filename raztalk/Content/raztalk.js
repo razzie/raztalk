@@ -79,7 +79,9 @@
         item.html(linkify(item.text()));
     });
 
-    $("a").oembed();
+    $("a").each(function () {
+        $(this).oembed();
+    });
 
     $("#message").focus();
 
