@@ -42,7 +42,7 @@
         }
     };
     channel.client.sendInfo = function (info, timestamp) {
-        row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\>" + info + "</td></tr>";
+        row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + info + "</td></tr>";
         $("#messages tr:last").after(row);
         $.playSound("/content/notification.mp3");
         sr.reveal('.reveal');
