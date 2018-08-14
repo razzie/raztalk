@@ -16,7 +16,9 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
+using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace raztalk
 {
@@ -71,14 +73,22 @@ namespace raztalk
 
         static public Channel Login(User user, string channelname, string channelpw)
         {
-            Channel channel;
+            if (string.IsNullOrEmpty(channelname) || !Regex.IsMatch(channelname, "^[a-zA-Z0-9_.-]*$"))
+                throw new Exception("Invalid username!");
 
+            if (channelname.Length > 64)
+                throw new Exception("Channel name too long");
+
+            if (channelpw == null)
+                channelpw = string.Empty;
+
+            Channel channel;
             if (m_channels.TryGetValue(channelname, out channel))
             {
                 if (channel.Login(user, channelpw))
                     return channel;
                 else
-                    return null;
+                    throw new Exception("Authentication to channel failed!");
             }
             else
             {

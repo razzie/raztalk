@@ -37,13 +37,16 @@ namespace raztalk
 
         public User User { get; private set; }
         public Channel Channel { get; private set; }
+        public string Password { get; private set; }
         public string Token { get; private set; }
 
-        private Connection(User user, Channel channel)
+        private Connection(User user, Channel channel, string password)
         {
             User = user;
             Channel = channel;
+            Password = password;
             Token = Guid.NewGuid().ToString();
+
             m_connections.Add(Token, new WeakReference<Connection>(this));
 
             SendInfo(User.Name + " connected");
@@ -90,6 +93,7 @@ namespace raztalk
             m_connections.Remove(Token);
             User = null;
             Channel = null;
+            Password = null;
             Token = string.Empty;
         }
 
@@ -105,13 +109,10 @@ namespace raztalk
 
         static public Connection Open(string username, string channelname, string channelpw)
         {
-            User user = new User(username);
-            Channel channel = Channel.Login(user, channelname, channelpw);
+            var user = new User(username);
+            var channel = Channel.Login(user, channelname, channelpw);
 
-            if (channel != null)
-                return new Connection(user, channel);
-            else
-                return null;
+            return new Connection(user, channel, channelpw);
         }
 
         static public Connection Get(string token)
