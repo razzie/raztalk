@@ -20,8 +20,10 @@ using Nancy;
 using Nancy.ModelBinding;
 using Nancy.Responses.Negotiation;
 using Nancy.Security;
+using System;
 using System.Dynamic;
-using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace raztalk.Modules
 {
@@ -32,6 +34,21 @@ namespace raztalk.Modules
             public string User { get; set; }
             public string Channel { get; set; }
             public string Password { get; set; }
+
+            public string PasswordMD5
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(Password))
+                        return string.Empty;
+
+                    using (MD5 md5 = MD5.Create())
+                    {
+                        byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(Password));
+                        return Convert.ToBase64String(hash);
+                    }
+                }
+            }
         }
 
         public LoginModule()
@@ -50,30 +67,17 @@ namespace raztalk.Modules
             {
                 this.RequiresHttps();
 
-                var data = this.Bind<LoginData>();
-                string pattern = "^[a-zA-Z0-9_.-]*$";
-
-                if (string.IsNullOrEmpty(data.User))
-                    return Fail("Empty username!");
-
-                if (!Regex.IsMatch(data.User, pattern))
-                    return Fail("Invalid username!");
-
-                if (string.IsNullOrEmpty(data.Channel))
-                    return Fail("Empty channel!");
-
-                if (!Regex.IsMatch(data.Channel, pattern))
-                    return Fail("Invalid channel!");
-
-                if (data.Password == null)
-                    data.Password = string.Empty;
-
-                var connection = Connection.Open(data.User, data.Channel, data.Password);
-                if (connection == null)
-                    return Fail("Could not authenticate to channel");
-                
-                Context.Request.Session["connection"] = connection.Token;
-                return Response.AsRedirect("/channel/" + connection.Channel.Name);
+                try
+                {
+                    var data = this.Bind<LoginData>();
+                    var connection = Connection.Open(data.User, data.Channel, data.PasswordMD5);
+                    Context.Request.Session["connection"] = connection.Token;
+                    return Response.AsRedirect("/channel/" + connection.Channel.Name);
+                }
+                catch (Exception e)
+                {
+                    return Fail(e.Message);
+                }
             };
         }
 

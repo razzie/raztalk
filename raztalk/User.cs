@@ -16,21 +16,34 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace raztalk
 {
     public class User
     {
-        public User(string name)
+        private User()
         {
-            Name = name;
+            Name = string.Empty;
+        }
+
+        public User(string username)
+        {
+            if (string.IsNullOrEmpty(username) || !Regex.IsMatch(username, "^[a-zA-Z0-9_.-]*$"))
+                throw new Exception("Invalid username!");
+
+            if (username.Length > 64)
+                throw new Exception("Username too long");
+
+            Name = username;
         }
 
         public string Name { get; private set; }
 
-        static public User System { get; set; } = new User(string.Empty);
+        static public User System { get; set; } = new User();
     }
 
     public static class UsersExtension
