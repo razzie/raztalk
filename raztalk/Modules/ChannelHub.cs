@@ -38,7 +38,7 @@ namespace raztalk.Modules
 
         public bool Login(string token)
         {
-            Connection connection = Connection.Get(token);
+            Connection connection = Connection.Get(token, true);
             if (connection != null)
             {
                 m_connections.Add(Context.ConnectionId, connection);
