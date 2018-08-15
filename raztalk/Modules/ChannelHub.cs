@@ -44,8 +44,7 @@ namespace raztalk.Modules
             try
             {
                 var connection = Connection.Open(username, channelname, channelpw);
-                Join(connection.Token);
-                return true;
+                return Join(connection.Token);
             }
             catch (Exception)
             {
@@ -56,11 +55,10 @@ namespace raztalk.Modules
 
         public bool Join(string token)
         {
-            Connection connection = Connection.Join(token);
+            Connection connection = Connection.Join(token, Context.ConnectionId);
             if (connection != null)
             {
                 m_connections.Add(Context.ConnectionId, connection);
-                Groups.Add(Context.ConnectionId, connection.Channel.Name);
                 return true;
             }
 
