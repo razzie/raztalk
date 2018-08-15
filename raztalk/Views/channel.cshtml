@@ -29,6 +29,8 @@
 					</tr>
 					@foreach (var msg in Model.Channel.Messages)
 					{
+						@if (msg.HiddenForUser == Model.User) continue;
+
 						<tr class="@(msg.SystemMessage ? "info " : "")reveal">
 							<td>@msg.User.Name</td>
 							<td data-timestamp="@msg.TimestampStr"><pre>@msg.Text</pre></td>

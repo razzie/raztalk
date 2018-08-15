@@ -41,6 +41,7 @@ namespace raztalk
         public Channel Channel { get; private set; }
         public string Password { get; private set; }
         public string Token { get; private set; }
+        private string ConnectionId { get; set; }
 
         private Connection(User user, Channel channel, string password)
         {
@@ -52,7 +53,7 @@ namespace raztalk
             m_connections.Add(Token, this);
             StartKeepAliveTimer();
 
-            SendInfo(User.Name + " is connecting...");
+            SendInfo(User.Name + " is connecting...", true);
         }
 
         private void StartKeepAliveTimer()
@@ -90,15 +91,26 @@ namespace raztalk
         public void SendMessage(string text)
         {
             Message message = new Message(User, text);
-            Channel.AddMessage(message);
+
             Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
+            Channel.AddMessage(message);
         }
 
-        public void SendInfo(string info)
+        public void SendInfo(string info, bool exclude_user = false)
         {
             Message message = new Message(User.System, info);
+
+            if (exclude_user)
+            {
+                message.HiddenForUser = User;
+                Hub.Clients.Group(Channel.Name, ConnectionId).SendInfo(message.Text, message.TimestampStr);
+            }
+            else
+            {
+                Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
+            }
+
             Channel.AddMessage(message);
-            Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
         }
 
         private void UpdateUsers()
@@ -163,6 +175,7 @@ namespace raztalk
                 connection.SendInfo(connection.User.Name + " joined");
                 Hub.Groups.Add(id, connection.Channel.Name);
                 connection.UpdateUsers();
+                connection.ConnectionId = id;
                 return connection;
             }
 
