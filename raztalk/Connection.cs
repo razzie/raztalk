@@ -53,7 +53,6 @@ namespace raztalk
             StartKeepAliveTimer();
 
             SendInfo(User.Name + " is connecting...");
-            UpdateUsers();
         }
 
         private void StartKeepAliveTimer()
@@ -80,24 +79,32 @@ namespace raztalk
             Close();
         }
 
+        static private IHubContext Hub
+        {
+            get
+            {
+                return GlobalHost.ConnectionManager.GetHubContext<ChannelHub>();
+            }
+        }
+
         public void SendMessage(string text)
         {
             Message message = new Message(User, text);
             Channel.AddMessage(message);
-            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
+            Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
         }
 
         public void SendInfo(string info)
         {
             Message message = new Message(User.System, info);
             Channel.AddMessage(message);
-            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
+            Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
         }
 
         private void UpdateUsers()
         {
             string userlist = Channel.Users.AsString();
-            GlobalHost.ConnectionManager.GetHubContext<ChannelHub>().Clients.Group(Channel.Name).UpdateUsers(userlist);
+            Hub.Clients.Group(Channel.Name).UpdateUsers(userlist);
         }
 
         public void Close()
@@ -144,7 +151,7 @@ namespace raztalk
             return connection;
         }
 
-        static public Connection Join(string token)
+        static public Connection Join(string id, string token)
         {
             if (token == null)
                 return null;
@@ -154,6 +161,8 @@ namespace raztalk
             {
                 connection.KillKeepAliveTimer();
                 connection.SendInfo(connection.User.Name + " joined");
+                Hub.Groups.Add(id, connection.Channel.Name);
+                connection.UpdateUsers();
                 return connection;
             }
 
