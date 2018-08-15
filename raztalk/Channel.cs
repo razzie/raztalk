@@ -47,7 +47,7 @@ namespace raztalk
             Password = channelpw;
             MaxHistory = 20;
             m_users.Add(creator);
-            m_channels.Add(Name, this);
+            m_channels.Add(Name.ToLower(), this);
         }
 
         public string Name { get; private set; }
@@ -95,7 +95,7 @@ namespace raztalk
                 channelpw = string.Empty;
 
             Channel channel;
-            if (m_channels.TryGetValue(channelname, out channel))
+            if (m_channels.TryGetValue(channelname.ToLower(), out channel))
             {
                 if (channel.Login(user, channelpw))
                     return channel;
