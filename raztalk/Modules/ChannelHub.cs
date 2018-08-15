@@ -17,6 +17,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using Microsoft.AspNet.SignalR;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,15 +31,32 @@ namespace raztalk.Modules
         {
             get
             {
-                Connection connection = null;
-                m_connections.TryGetValue(Context.ConnectionId, out connection);
+                Connection connection;
+                if (!m_connections.TryGetValue(Context.ConnectionId, out connection))
+                    Clients.Caller.RequestLogin();
+
                 return connection;
             }
         }
 
-        public bool Login(string token)
+        public bool Login(string username, string channelname, string channelpw)
         {
-            Connection connection = Connection.Get(token, true);
+            try
+            {
+                var connection = Connection.Open(username, channelname, channelpw);
+                Join(connection.Token);
+                return true;
+            }
+            catch (Exception)
+            {
+            }
+            
+            return false;
+        }
+
+        public bool Join(string token)
+        {
+            Connection connection = Connection.Join(token);
             if (connection != null)
             {
                 m_connections.Add(Context.ConnectionId, connection);
@@ -60,6 +78,13 @@ namespace raztalk.Modules
             m_connections.Remove(Context.ConnectionId);
 
             return base.OnDisconnected(stopCalled);
+        }
+
+        public override Task OnReconnected()
+        {
+            Clients.Caller.RequestLogin();
+
+            return base.OnReconnected();
         }
     }
 }
