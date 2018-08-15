@@ -66,6 +66,12 @@ namespace raztalk
 
         private bool Login(User user, string password)
         {
+            foreach (var u in m_users)
+            {
+                if (u.Name.ToLower().Equals(user.Name.ToLower()))
+                    throw new Exception("User already in channel");
+            }
+
             if (Password.Equals(password))
             {
                 m_users.Add(user);

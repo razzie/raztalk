@@ -35,6 +35,8 @@ namespace raztalk
     public class Connection : IPrincipal
     {
         static private Dictionary<string, Connection> m_connections = new Dictionary<string, Connection>();
+        static public int KeepAliveTimeout { get; } = 10000;
+
         private Timer m_timer;
 
         public User User { get; private set; }
@@ -58,7 +60,7 @@ namespace raztalk
 
         private void StartKeepAliveTimer()
         {
-            m_timer = new Timer(5000); // wait for max 5 seconds until signalR is connected
+            m_timer = new Timer(KeepAliveTimeout); // wait for max N seconds until signalR is connected
             m_timer.Elapsed += KeepAliveExpired;
             m_timer.AutoReset = false;
             m_timer.Enabled = true;
@@ -90,6 +92,9 @@ namespace raztalk
 
         public void SendMessage(string text)
         {
+            if (string.IsNullOrEmpty(text))
+                return;
+
             Message message = new Message(User, text);
 
             Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
@@ -98,6 +103,9 @@ namespace raztalk
 
         public void SendInfo(string info, bool exclude_user = false)
         {
+            if (string.IsNullOrEmpty(info))
+                return;
+
             Message message = new Message(User.System, info);
 
             if (exclude_user)
@@ -124,7 +132,7 @@ namespace raztalk
             if (Channel != null)
             {
                 Channel.Logout(User);
-                SendInfo(User.Name + " left");
+                SendInfo(User.Name + " left", true);
                 UpdateUsers();
             }
 
