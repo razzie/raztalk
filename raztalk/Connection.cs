@@ -172,7 +172,7 @@ namespace raztalk
             if (m_connections.TryGetValue(token, out connection))
             {
                 connection.KillKeepAliveTimer();
-                connection.SendInfo(connection.User.Name + " joined");
+                connection.SendInfo(connection.User.Name + " joined", true);
                 Hub.Groups.Add(id, connection.Channel.Name);
                 connection.UpdateUsers();
                 connection.ConnectionId = id;
