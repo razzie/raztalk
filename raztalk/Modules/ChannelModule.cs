@@ -44,6 +44,11 @@ namespace raztalk.Modules
 
                 return View["channel", model];
             };
+
+            Get["/channel-stats"] = ctx =>
+            {
+                return string.Format("Channels: {0} - Users {1}", Channel.ChannelCount, Channel.UserCount);
+            };
         }
     }
 }

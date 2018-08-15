@@ -26,6 +26,18 @@ namespace raztalk
     {
         static private Dictionary<string, Channel> m_channels = new Dictionary<string, Channel>();
 
+        static public int ChannelCount { get { return m_channels.Count; } }
+        static public int UserCount
+        {
+            get
+            {
+                int users = 0;
+                foreach (var channel in m_channels.Values)
+                    users += channel.m_users.Count;
+                return users;
+            }
+        }
+
         private List<User> m_users = new List<User>();
         private List<Message> m_messages = new List<Message>();
 
