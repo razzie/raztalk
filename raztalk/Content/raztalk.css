@@ -12,8 +12,6 @@ section {
 }
 
 table, tbody, tr {
-    /*table-layout: fixed;*/
-    /*width: 100%;*/
     padding: 0;
     margin: 0;
     border-spacing: 0;
@@ -41,6 +39,10 @@ pre {
     word-wrap: break-word;
     overflow-wrap: break-word;
     margin: 0;
+}
+
+html.sr .reveal {
+    visibility: hidden;
 }
 
 #message {
