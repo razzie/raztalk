@@ -134,7 +134,17 @@ namespace raztalk
             return new Connection(user, channel, channelpw);
         }
 
-        static public Connection Get(string token, bool join = false)
+        static public Connection Get(string token)
+        {
+            if (token == null)
+                return null;
+
+            Connection connection = null;
+            m_connections.TryGetValue(token, out connection);
+            return connection;
+        }
+
+        static public Connection Join(string token)
         {
             if (token == null)
                 return null;
@@ -142,11 +152,8 @@ namespace raztalk
             Connection connection;
             if (m_connections.TryGetValue(token, out connection))
             {
-                if (join)
-                {
-                    connection.KillKeepAliveTimer();
-                    connection.SendInfo(connection.User.Name + " joined");
-                }
+                connection.KillKeepAliveTimer();
+                connection.SendInfo(connection.User.Name + " joined");
                 return connection;
             }
 

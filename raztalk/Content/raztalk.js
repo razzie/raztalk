@@ -2,7 +2,6 @@
     window.sr = ScrollReveal({ reset: true, duration: 250 });
     var isActive = true;
     var unread = 0;
-    var token = $("body").data("token");
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
 
@@ -22,6 +21,12 @@
         sr.reveal('.reveal');
         $("html, body").scrollTop($(document).height());
         $.playSound("/content/notification.mp3");
+    }
+
+    function reconnect() {
+        $.connection.hub.start().done(function () {
+            channel.client.requestLogin();
+        });
     }
 
     $(window).focus(function (event) {
@@ -48,11 +53,23 @@
     channel.client.updateUsers = function (users) {
         $("#users").text("Connected users: " + users);
     }
+    channel.client.requestLogin = function () {
+        body = $("body");
+        if (channel.server.login(body.data("user"), body.data("channel"), body.data("pw"))) {
+            $("#message").prop("disabled", false);
+            $(".reconnect").removeAttr("href");
+        } else {
+            channel.client.sendInfo("Login failed");
+        }
+    }
 
     $.connection.hub.start().done(function () {
-        if (channel.server.login(token) == false) {
-            $("#message").prop("disabled", true);
-            channel.client.sendInfo("Connection error");
+        token = $("body").data("token");
+
+        if (channel.server.join(token)) {
+            $("#message").prop("disabled", false);
+        } else {
+            channel.client.sendInfo("Join failed");
         }
 
         $("#message").keypress(function (e) {
@@ -66,12 +83,14 @@
                 msg.focus();
             }
         });
-
-        $("#message").prop("disabled", false);
     });
     $.connection.hub.disconnected(function () {
         $("#message").prop("disabled", true);
-        channel.client.sendInfo("Disconnected");
+        channel.client.sendInfo("Disconnected ( <a href=\"#\" class=\"reconnect\" target=\"_self\">Reconnect</a> )");
+        $(".reconnect").click(reconnect);
+    });
+    $.connection.hub.reconnecting(function () {
+        channel.client.sendInfo("Reconnecting..");
     });
 
     $("pre").each(function () {
