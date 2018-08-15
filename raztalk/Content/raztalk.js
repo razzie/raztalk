@@ -4,6 +4,7 @@
     var unread = 0;
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
+    var lastTimestamp = "1970/01/01 00:00:00";
 
     String.prototype.trim = function () {
         return this.replace(/^\s+|\s+$/g, "");
@@ -45,6 +46,7 @@
             unread += 1;
             document.title = "(+" + unread + ") RazTalk - " + channelname;
         }
+        lastTimestamp = timestamp;
     };
     channel.client.sendInfo = function (info, timestamp) {
         row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + info + "</td></tr>";
@@ -55,7 +57,7 @@
     }
     channel.client.requestLogin = function () {
         body = $("body");
-        if (channel.server.login(body.data("user"), body.data("channel"), body.data("pw"))) {
+        if (channel.server.login(body.data("user"), body.data("channel"), body.data("pw"), lastTimestamp)) {
             $("#message").prop("disabled", false);
             $(".reconnect").removeAttr("href");
         } else {

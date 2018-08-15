@@ -19,6 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using Microsoft.AspNet.SignalR;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace raztalk.Modules
@@ -39,12 +40,28 @@ namespace raztalk.Modules
             }
         }
 
-        public bool Login(string username, string channelname, string channelpw)
+        public bool Login(string username, string channelname, string channelpw, string last_timestamp)
         {
             try
             {
                 var connection = Connection.Open(username, channelname, channelpw);
-                return Join(connection.Token);
+                var joined = Join(connection.Token);
+
+                if (joined)
+                {
+                    var ts = DateTime.ParseExact(last_timestamp, Message.TimestampFormat, CultureInfo.InvariantCulture);
+                    foreach (var msg in connection.Channel.Messages)
+                    {
+                        if (msg.Timestamp > ts && msg.HiddenForUser != connection.User)
+                        {
+                            Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampStr);
+                        }
+                    }
+                }
+            }
+            catch (FormatException)
+            {
+                return true;
             }
             catch (Exception)
             {

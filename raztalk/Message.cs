@@ -17,6 +17,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using System;
+using System.Globalization;
 
 namespace raztalk
 {
@@ -39,8 +40,10 @@ namespace raztalk
         public User User { get; private set; }
         public string Text { get; private set; }
         public DateTime Timestamp { get; private set; }
-        public string TimestampStr { get { return Timestamp.ToString("yyyy/MM/dd HH:mm:ss"); } }
+        public string TimestampStr { get { return Timestamp.ToString(TimestampFormat, CultureInfo.InvariantCulture); } }
         public bool SystemMessage { get { return User == User.System; } }
         public User HiddenForUser { get; set; }
+
+        static public string TimestampFormat { get; } = "yyyy/MM/dd hh:mm:ss";
     }
 }
