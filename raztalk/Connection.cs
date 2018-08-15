@@ -35,7 +35,7 @@ namespace raztalk
     public class Connection : IPrincipal
     {
         static private Dictionary<string, Connection> m_connections = new Dictionary<string, Connection>();
-        static public int KeepAliveTimeout { get; } = 10000;
+        static public int KeepAliveTimeout { get; } = 15;
 
         private Timer m_timer;
 
@@ -58,9 +58,14 @@ namespace raztalk
             SendInfo(User.Name + " is connecting...", true);
         }
 
+        ~Connection()
+        {
+            Close();
+        }
+
         private void StartKeepAliveTimer()
         {
-            m_timer = new Timer(KeepAliveTimeout); // wait for max N seconds until signalR is connected
+            m_timer = new Timer(KeepAliveTimeout * 1000); // wait for max N seconds until signalR is connected
             m_timer.Elapsed += KeepAliveExpired;
             m_timer.AutoReset = false;
             m_timer.Enabled = true;
