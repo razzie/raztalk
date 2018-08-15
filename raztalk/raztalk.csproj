@@ -107,7 +107,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="StaticResourceConventionBuilder.cs" />
-    <Compile Include="TimeoutReference.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>

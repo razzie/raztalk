@@ -21,6 +21,7 @@ using raztalk.Modules;
 using System;
 using System.Collections.Generic;
 using System.Security.Principal;
+using System.Timers;
 
 namespace raztalk
 {
@@ -33,7 +34,8 @@ namespace raztalk
 
     public class Connection : IPrincipal
     {
-        static private Dictionary<string, WeakReference<Connection>> m_connections = new Dictionary<string, WeakReference<Connection>>();
+        static private Dictionary<string, Connection> m_connections = new Dictionary<string, Connection>();
+        private Timer m_timer;
 
         public User User { get; private set; }
         public Channel Channel { get; private set; }
@@ -47,17 +49,34 @@ namespace raztalk
             Password = password;
             Token = Guid.NewGuid().ToString();
 
-            m_connections.Add(Token, new WeakReference<Connection>(this));
+            m_connections.Add(Token, this);
+            StartKeepAliveTimer();
 
-            SendInfo(User.Name + " connected");
+            SendInfo(User.Name + " is connecting...");
             UpdateUsers();
-
-            // hold a reference to this for 10 seconds, should be enough till SignalR connects
-            TimeoutReference.Add(this, 10000);
         }
 
-        ~Connection()
+        private void StartKeepAliveTimer()
         {
+            m_timer = new Timer(5000); // wait for max 5 seconds until signalR is connected
+            m_timer.Elapsed += KeepAliveExpired;
+            m_timer.AutoReset = false;
+            m_timer.Enabled = true;
+        }
+
+        private void KillKeepAliveTimer()
+        {
+            if (m_timer != null)
+            {
+                m_timer.Elapsed -= KeepAliveExpired;
+                m_timer.Dispose();
+                m_timer = null;
+            }
+        }
+
+        private void KeepAliveExpired(object sender, ElapsedEventArgs e)
+        {
+            KillKeepAliveTimer();
             Close();
         }
 
@@ -86,7 +105,7 @@ namespace raztalk
             if (Channel != null)
             {
                 Channel.Logout(User);
-                SendInfo(User.Name + " disconnected");
+                SendInfo(User.Name + " left");
                 UpdateUsers();
             }
 
@@ -115,17 +134,23 @@ namespace raztalk
             return new Connection(user, channel, channelpw);
         }
 
-        static public Connection Get(string token)
+        static public Connection Get(string token, bool join = false)
         {
             if (token == null)
                 return null;
 
-            WeakReference<Connection> weakconn = null;
-            Connection connection = null;
+            Connection connection;
+            if (m_connections.TryGetValue(token, out connection))
+            {
+                if (join)
+                {
+                    connection.KillKeepAliveTimer();
+                    connection.SendInfo(connection.User.Name + " joined");
+                }
+                return connection;
+            }
 
-            m_connections.TryGetValue(token, out weakconn);
-            weakconn?.TryGetTarget(out connection);
-            return connection;
+            return null;
         }
     }
 }

@@ -18,6 +18,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace raztalk
@@ -41,7 +42,7 @@ namespace raztalk
         public string Name { get; private set; }
         public string Password { get; private set; }
         public IEnumerable<User> Users { get { return m_users; } }
-        public IEnumerable<Message> Messages { get { return m_messages; } }
+        public IEnumerable<Message> Messages { get { return m_messages.Take(m_messages.Count - 1); ; } }
         public uint MaxHistory { get; private set; }
 
         public void AddMessage(Message message)

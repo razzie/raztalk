@@ -30,17 +30,17 @@ namespace raztalk.Modules
             {
                 this.RequiresHttps();
 
-                string token = (string)Context.Request.Session["connection"];
-                Connection connection = Connection.Get(token);
+                var token = (string)Context.Request.Session["connection"];
+                var connection = Connection.Get(token);
 
                 if (connection == null)
                     return Response.AsRedirect("/");
 
                 dynamic model = new ExpandoObject();
+                model.Token = connection.Token.ToString();
                 model.User = connection.User;
                 model.Users = connection.Channel.Users.AsString();
                 model.Channel = connection.Channel;
-                model.Token = connection.Token.ToString();
 
                 return View["channel", model];
             };
