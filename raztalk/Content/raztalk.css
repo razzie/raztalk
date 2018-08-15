@@ -12,20 +12,21 @@ section {
 }
 
 table, tbody, tr {
-    table-layout: fixed;
-    width: 100%;
+    /*table-layout: fixed;*/
+    /*width: 100%;*/
     padding: 0;
     margin: 0;
     border-spacing: 0;
+    white-space: nowrap;
 }
 td {
-    width: 100%;
+    content: '';
     padding-bottom: 0.25em;
     vertical-align: text-top;
 }
 td:first-child {
-    width: 1px;
     padding-right: 2em;
+    margin-right: 2em;
     text-align: right;
 }
 
