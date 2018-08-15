@@ -32,9 +32,11 @@ namespace raztalk.Modules
         {
             get
             {
-                Connection connection;
-                if (!m_connections.TryGetValue(Context.ConnectionId, out connection))
-                    Clients.Caller.RequestLogin();
+                Connection connection = null;
+                m_connections.TryGetValue(Context.ConnectionId, out connection);
+
+                //if (!m_connections.TryGetValue(Context.ConnectionId, out connection))
+                //    Clients.Caller.RequestLogin();
 
                 return connection;
             }
@@ -44,6 +46,7 @@ namespace raztalk.Modules
         {
             try
             {
+                m_connections.Remove(Context.ConnectionId);
                 var connection = Connection.Open(username, channelname, channelpw);
                 var joined = Join(connection.Token);
 

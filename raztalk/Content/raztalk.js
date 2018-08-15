@@ -70,6 +70,7 @@
 
         if (channel.server.join(token)) {
             $("#message").prop("disabled", false);
+            channel.server.send("");
         } else {
             channel.client.sendInfo("Join failed");
         }
@@ -90,9 +91,6 @@
         $("#message").prop("disabled", true);
         channel.client.sendInfo("Disconnected ( <a href=\"#\" class=\"reconnect\" target=\"_self\">Reconnect</a> )");
         $(".reconnect").click(reconnect);
-    });
-    $.connection.hub.reconnecting(function () {
-        channel.client.sendInfo("Reconnecting..");
     });
 
     $("pre").each(function () {
