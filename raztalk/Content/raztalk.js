@@ -2,6 +2,8 @@
     window.sr = ScrollReveal({ reset: true, duration: 250 });
     var isActive = true;
     var unread = 0;
+    var lastMsgUser = "";
+    var username = $("body").data("user");
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
     var lastTimestamp = "1970/01/01 00:00:00";
@@ -14,6 +16,16 @@
         return str.replace(/(<a href=")?((https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)))(">(.*)<\/a>)?/gi, function () {
             return '<a href="' + arguments[2] + '">' + (arguments[7] || arguments[2]) + '</a>'
         });
+    }
+
+    function formatUser(user) {
+        if (user == lastMsgUser) {
+            return "";
+        } else if (user == username) {
+            return "<strong>" + user + "</strong>";
+        } else {
+           return user;
+        }
     }
 
     function addRow(row) {
@@ -40,17 +52,19 @@
     });
 
     channel.client.send = function (user, message, timestamp) {
-        row = "<tr class=\"reveal\"><td>" + user + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + linkify(message) + "</pre></td></tr>";
+        row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + linkify(message) + "</pre></td></tr>";
         addRow(row);
         if (!isActive) {
             unread += 1;
             document.title = "(+" + unread + ") RazTalk - " + channelname;
         }
+        lastMsgUser = user;
         lastTimestamp = timestamp;
     };
     channel.client.sendInfo = function (info, timestamp) {
         row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + info + "</td></tr>";
         addRow(row);
+        lastMsgUser = "";
     };
     channel.client.updateUsers = function (users) {
         $("#users").text("Connected users: " + users);
