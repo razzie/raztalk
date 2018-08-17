@@ -20,6 +20,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Timers;
 
 namespace raztalk
 {
@@ -41,6 +42,7 @@ namespace raztalk
 
         private List<User> m_users = new List<User>();
         private ConcurrentQueue<Message> m_messages = new ConcurrentQueue<Message>();
+        private Timer m_timer;
 
         private Channel(string channelname, string channelpw, User creator)
         {
@@ -82,6 +84,7 @@ namespace raztalk
 
                 if (Password.Equals(password))
                 {
+                    KillTimeout();
                     m_users.Add(user);
                     return true;
                 }
@@ -96,6 +99,38 @@ namespace raztalk
             {
                 m_users.Remove(user);
 
+                if (m_users.Count == 0)
+                    StartTimeout();
+            }
+        }
+
+        private void StartTimeout()
+        {
+            if (m_timer != null)
+                KillTimeout();
+
+            m_timer = new Timer(TimeSpan.FromMinutes(5).TotalMilliseconds);
+            m_timer.Elapsed += TimeoutExpired;
+            m_timer.AutoReset = false;
+            m_timer.Enabled = true;
+        }
+
+        private void KillTimeout()
+        {
+            if (m_timer != null)
+            {
+                m_timer.Elapsed -= TimeoutExpired;
+                m_timer.Dispose();
+                m_timer = null;
+            }
+        }
+
+        private void TimeoutExpired(object sender, ElapsedEventArgs e)
+        {
+            KillTimeout();
+
+            lock (m_users)
+            {
                 if (m_users.Count == 0)
                 {
                     Channel tmp_channel;
