@@ -33,8 +33,6 @@ namespace raztalk.Modules
             get
             {
                 Connection connection = null;
-                //m_connections.TryGetValue(Context.ConnectionId, out connection);
-
                 if (!m_connections.TryGetValue(Context.ConnectionId, out connection))
                     Clients.Caller.RequestLogin();
 
@@ -60,7 +58,7 @@ namespace raztalk.Modules
                     var ts = DateTime.ParseExact(last_timestamp, Message.TimestampFormat, CultureInfo.InvariantCulture);
                     foreach (var msg in connection.Channel.Messages)
                     {
-                        if (msg.Timestamp > ts && msg.HiddenForUser != connection.User)
+                        if (msg.Timestamp > ts)
                         {
                             if (msg.SystemMessage)
                                 Clients.Caller.SendInfo(msg.Text, msg.TimestampStr);
@@ -84,9 +82,17 @@ namespace raztalk.Modules
         public bool Join(string token)
         {
             Connection connection = Connection.Join(Context.ConnectionId, token);
-            if (connection != null)
+            if (connection != null && m_connections.TryAdd(Context.ConnectionId, connection))
             {
-                return m_connections.TryAdd(Context.ConnectionId, connection);
+                foreach (var msg in connection.Channel.Messages)
+                {
+                    if (msg.SystemMessage)
+                        Clients.Caller.SendInfo(msg.Text, msg.TimestampStr);
+                    else
+                        Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampStr);
+                }
+
+                return true;
             }
 
             return false;

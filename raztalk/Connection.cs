@@ -57,7 +57,7 @@ namespace raztalk
 
             StartKeepAliveTimer();
 
-            SendInfo(User.Name + " is connecting...", true);
+            SendInfo(User.Name + " is connecting...");
         }
 
         ~Connection()
@@ -108,23 +108,13 @@ namespace raztalk
             Channel.AddMessage(message);
         }
 
-        public void SendInfo(string info, bool exclude_user = false)
+        public void SendInfo(string info)
         {
             if (string.IsNullOrEmpty(info))
                 return;
 
             Message message = new Message(User.System, info);
-
-            if (exclude_user)
-            {
-                message.HiddenForUser = User;
-                Hub.Clients.Group(Channel.Name, ConnectionId).SendInfo(message.Text, message.TimestampStr);
-            }
-            else
-            {
-                Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
-            }
-
+            Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
             Channel.AddMessage(message);
         }
 
@@ -139,7 +129,7 @@ namespace raztalk
             if (Channel != null)
             {
                 Channel.Logout(User);
-                SendInfo(User.Name + " left", true);
+                SendInfo(User.Name + " left");
                 UpdateUsers();
             }
 
@@ -189,7 +179,7 @@ namespace raztalk
             if (m_connections.TryGetValue(token, out connection))
             {
                 connection.KillKeepAliveTimer();
-                connection.SendInfo(connection.User.Name + " joined", true);
+                connection.SendInfo(connection.User.Name + " joined");
                 Hub.Groups.Add(connectionId, connection.Channel.Name);
                 connection.UpdateUsers();
                 connection.ConnectionId = connectionId;

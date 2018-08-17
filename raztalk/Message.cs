@@ -42,15 +42,6 @@ namespace raztalk
         public DateTime Timestamp { get; private set; }
         public string TimestampStr { get { return Timestamp.ToString(TimestampFormat, CultureInfo.InvariantCulture); } }
         public bool SystemMessage { get { return User == User.System; } }
-        public User HiddenForUser { get; set; }
-
-        public bool IsHiddenForUser(User user)
-        {
-            if (HiddenForUser == null)
-                return false;
-
-            return HiddenForUser.Name.ToLower().Equals(user.Name.ToLower());
-        }
 
         static public string TimestampFormat { get; } = "yyyy/MM/dd hh:mm:ss";
     }
