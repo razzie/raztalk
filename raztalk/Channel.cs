@@ -47,6 +47,7 @@ namespace raztalk
             Password = channelpw;
             MaxHistory = 20;
             m_users.Add(creator);
+
             m_channels.Add(Name.ToLower(), this);
         }
 

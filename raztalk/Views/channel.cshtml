@@ -30,7 +30,7 @@
 					</tr>
 					@foreach (var msg in Model.Channel.Messages)
 					{
-						@if (msg.HiddenForUser == Model.User) continue;
+						@if (msg.IsHiddenForUser(Model.User)) continue;
 
 						<tr class="@(msg.SystemMessage ? "info " : "")reveal">
 							<td>@msg.User.Name</td>

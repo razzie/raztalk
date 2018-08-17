@@ -176,7 +176,7 @@ namespace raztalk
             return connection;
         }
 
-        static public Connection Join(string id, string token)
+        static public Connection Join(string connectionId, string token)
         {
             if (token == null)
                 return null;
@@ -186,13 +186,25 @@ namespace raztalk
             {
                 connection.KillKeepAliveTimer();
                 connection.SendInfo(connection.User.Name + " joined", true);
-                Hub.Groups.Add(id, connection.Channel.Name);
+                Hub.Groups.Add(connectionId, connection.Channel.Name);
                 connection.UpdateUsers();
-                connection.ConnectionId = id;
+                connection.ConnectionId = connectionId;
                 return connection;
             }
 
             return null;
+        }
+
+        static public void Close(string connectionId)
+        {
+            foreach (var conn in m_connections)
+            {
+                if (conn.Value.ConnectionId != null && conn.Value.ConnectionId.Equals(connectionId))
+                {
+                    m_connections.Remove(conn.Key);
+                    return;
+                }
+            }
         }
     }
 }
