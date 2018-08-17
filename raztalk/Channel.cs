@@ -25,7 +25,7 @@ namespace raztalk
 {
     public class Channel
     {
-        static private Dictionary<string, Channel> m_channels = new Dictionary<string, Channel>();
+        static private ConcurrentDictionary<string, Channel> m_channels = new ConcurrentDictionary<string, Channel>();
 
         static public int ChannelCount { get { return m_channels.Count; } }
         static public int UserCount
@@ -49,7 +49,8 @@ namespace raztalk
             MaxHistory = 20;
             m_users.Add(creator);
 
-            m_channels.Add(Name.ToLower(), this);
+            if (!m_channels.TryAdd(Name.ToLower(), this))
+                throw new Exception("Internal channel error");
         }
 
         public string Name { get; private set; }
@@ -96,7 +97,10 @@ namespace raztalk
                 m_users.Remove(user);
 
                 if (m_users.Count == 0)
-                    m_channels.Remove(Name);
+                {
+                    Channel tmp_channel;
+                    m_channels.TryRemove(Name, out tmp_channel);
+                }
             }
         }
 
