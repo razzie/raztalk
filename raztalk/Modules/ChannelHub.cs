@@ -33,10 +33,10 @@ namespace raztalk.Modules
             get
             {
                 Connection connection = null;
-                m_connections.TryGetValue(Context.ConnectionId, out connection);
+                //m_connections.TryGetValue(Context.ConnectionId, out connection);
 
-                //if (!m_connections.TryGetValue(Context.ConnectionId, out connection))
-                //    Clients.Caller.RequestLogin();
+                if (!m_connections.TryGetValue(Context.ConnectionId, out connection))
+                    Clients.Caller.RequestLogin();
 
                 return connection;
             }
@@ -57,7 +57,10 @@ namespace raztalk.Modules
                     {
                         if (msg.Timestamp > ts && msg.HiddenForUser != connection.User)
                         {
-                            Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampStr);
+                            if (msg.SystemMessage)
+                                Clients.Caller.SendInfo(msg.Text, msg.TimestampStr);
+                            else
+                                Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampStr);
                         }
                     }
                 }
@@ -93,6 +96,7 @@ namespace raztalk.Modules
         public override Task OnDisconnected(bool stopCalled)
         {
             Connection?.Close();
+            Connection.Close(Context.ConnectionId);
             m_connections.Remove(Context.ConnectionId);
 
             return base.OnDisconnected(stopCalled);
