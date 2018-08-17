@@ -17,6 +17,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -39,7 +40,7 @@ namespace raztalk
         }
 
         private List<User> m_users = new List<User>();
-        private List<Message> m_messages = new List<Message>();
+        private ConcurrentQueue<Message> m_messages = new ConcurrentQueue<Message>();
 
         private Channel(string channelname, string channelpw, User creator)
         {
@@ -59,24 +60,30 @@ namespace raztalk
 
         public void AddMessage(Message message)
         {
-            m_messages.Add(message);
+            m_messages.Enqueue(message);
 
             if (m_messages.Count > MaxHistory)
-                m_messages.RemoveAt(0);
+            {
+                Message tmp_message;
+                m_messages.TryDequeue(out tmp_message);
+            }
         }
 
         private bool Login(User user, string password)
         {
-            foreach (var u in m_users)
+            lock (m_users)
             {
-                if (u.Name.ToLower().Equals(user.Name.ToLower()))
-                    throw new Exception("User already in channel");
-            }
+                foreach (var u in m_users)
+                {
+                    if (u.Name.ToLower().Equals(user.Name.ToLower()))
+                        throw new Exception("User already in channel");
+                }
 
-            if (Password.Equals(password))
-            {
-                m_users.Add(user);
-                return true;
+                if (Password.Equals(password))
+                {
+                    m_users.Add(user);
+                    return true;
+                }
             }
 
             return false;
@@ -84,10 +91,13 @@ namespace raztalk
 
         public void Logout(User user)
         {
-            m_users.Remove(user);
+            lock (m_users)
+            {
+                m_users.Remove(user);
 
-            if (m_users.Count == 0)
-                m_channels.Remove(Name);
+                if (m_users.Count == 0)
+                    m_channels.Remove(Name);
+            }
         }
 
         static public Channel Login(User user, string channelname, string channelpw)

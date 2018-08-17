@@ -19,7 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using Microsoft.AspNet.SignalR;
 using raztalk.Modules;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Security.Principal;
 using System.Timers;
 
@@ -34,7 +34,7 @@ namespace raztalk
 
     public class Connection : IPrincipal
     {
-        static private Dictionary<string, Connection> m_connections = new Dictionary<string, Connection>();
+        static private ConcurrentDictionary<string, Connection> m_connections = new ConcurrentDictionary<string, Connection>();
         static public int KeepAliveTimeout { get; } = 15;
 
         private Timer m_timer;
@@ -52,7 +52,9 @@ namespace raztalk
             Password = password;
             Token = Guid.NewGuid().ToString();
 
-            m_connections.Add(Token, this);
+            if (!m_connections.TryAdd(Token, this))
+                throw new Exception("Internal connection error");
+
             StartKeepAliveTimer();
 
             SendInfo(User.Name + " is connecting...", true);
@@ -141,7 +143,9 @@ namespace raztalk
                 UpdateUsers();
             }
 
-            m_connections.Remove(Token);
+            Connection tmp_connection;
+            m_connections.TryRemove(Token, out tmp_connection);
+
             User = null;
             Channel = null;
             Password = null;
@@ -201,7 +205,8 @@ namespace raztalk
             {
                 if (conn.Value.ConnectionId != null && conn.Value.ConnectionId.Equals(connectionId))
                 {
-                    m_connections.Remove(conn.Key);
+                    Connection tmp_connection;
+                    m_connections.TryRemove(conn.Key, out tmp_connection);
                     return;
                 }
             }
