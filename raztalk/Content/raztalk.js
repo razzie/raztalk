@@ -12,10 +12,19 @@
         return this.replace(/^\s+|\s+$/g, "");
     };
 
-    function linkify(str) {
-        return str.replace(/(<a href=")?((https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)))(">(.*)<\/a>)?/gi, function () {
-            return '<a href="' + arguments[2] + '">' + (arguments[7] || arguments[2]) + '</a>'
-        });
+    //function linkify(str) {
+    //    return str.replace(/(<a href=")?((https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)))(">(.*)<\/a>)?/gi, function () {
+    //        return '<a href="' + arguments[2] + '">' + (arguments[7] || arguments[2]) + '</a>'
+    //    });
+    //}
+
+    function fileExtension(url) {
+        return (url = url.substr(1 + url.lastIndexOf("/")).split('?')[0]).split('#')[0].substr(url.lastIndexOf(".")).toLowerCase();
+    }
+    function isImage(url) {
+        var image_types = [".jpg", ".jpeg", ".png", ".gif"];
+        var ext = fileExtension(url);
+        return (image_types.indexOf(ext) != -1);
     }
 
     function formatUser(user) {
@@ -27,10 +36,20 @@
            return user;
         }
     }
-
     function addRow(row) {
         $("#messages tr:last").after(row);
-        $("#messages tr:last a").oembed();
+        msg = $("#messages tr:last pre");
+
+        msg.linkify();
+        links = msg.find("a");
+        links.oembed();
+        links.each(function () {
+            var url = $(this).attr("href");
+            if (isImage(url)) {
+                $(this).html("<img src=\"" + url + "\" />");
+            }
+        });
+
         sr.reveal('.reveal');
         $("html, body").scrollTop($(document).height());
         $.playSound("/content/notification.mp3");
@@ -52,7 +71,7 @@
     });
 
     channel.client.send = function (user, message, timestamp) {
-        row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + linkify(message) + "</pre></td></tr>";
+        row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + message + "</pre></td></tr>";
         addRow(row);
         if (!isActive) {
             unread += 1;
@@ -72,7 +91,7 @@
     channel.client.requestLogin = function () {
         body = $("body");
         if (channel.server.login(body.data("user"), body.data("channel"), body.data("pw"), lastTimestamp)) {
-            $("#message").prop("disabled", false);
+            $("#message").prop("disabled", false).focus();
             $(".reconnect").removeAttr("href");
         } else {
             channel.client.sendInfo("Login failed");
@@ -83,7 +102,7 @@
         token = $("body").data("token");
 
         if (channel.server.join(token)) {
-            $("#message").prop("disabled", false);
+            $("#message").prop("disabled", false).focus();
             channel.server.send("");
         } else {
             channel.client.sendInfo("Join failed");
@@ -106,17 +125,6 @@
         channel.client.sendInfo("Disconnected ( <a href=\"#\" class=\"reconnect\" target=\"_self\">Reconnect</a> )");
         $(".reconnect").click(reconnect);
     });
-
-    $("pre").each(function () {
-        item = $(this);
-        item.html(linkify(item.text()));
-    });
-
-    $("a").each(function () {
-        $(this).oembed();
-    });
-
-    $("#message").focus();
 
     sr.reveal('.reveal');
 });
