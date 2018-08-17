@@ -18,7 +18,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using Microsoft.AspNet.SignalR;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Threading.Tasks;
 
@@ -26,7 +26,7 @@ namespace raztalk.Modules
 {
     public class ChannelHub : Hub
     {
-        static private Dictionary<string, Connection> m_connections = new Dictionary<string, Connection>();
+        static private ConcurrentDictionary<string, Connection> m_connections = new ConcurrentDictionary<string, Connection>();
 
         private Connection Connection
         {
@@ -46,8 +46,13 @@ namespace raztalk.Modules
         {
             try
             {
-                m_connections.Remove(Context.ConnectionId);
-                var connection = Connection.Open(username, channelname, channelpw);
+                Connection connection;
+                if (m_connections.TryRemove(Context.ConnectionId, out connection))
+                {
+                    connection.Close();
+                }
+
+                connection = Connection.Open(username, channelname, channelpw);
                 var joined = Join(connection.Token);
 
                 if (joined)
@@ -81,8 +86,7 @@ namespace raztalk.Modules
             Connection connection = Connection.Join(Context.ConnectionId, token);
             if (connection != null)
             {
-                m_connections.Add(Context.ConnectionId, connection);
-                return true;
+                return m_connections.TryAdd(Context.ConnectionId, connection);
             }
 
             return false;
@@ -95,9 +99,13 @@ namespace raztalk.Modules
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            Connection?.Close();
             Connection.Close(Context.ConnectionId);
-            m_connections.Remove(Context.ConnectionId);
+
+            Connection connection;
+            if (m_connections.TryRemove(Context.ConnectionId, out connection))
+            {
+                connection.Close();
+            }
 
             return base.OnDisconnected(stopCalled);
         }
