@@ -103,7 +103,7 @@
 
         if (channel.server.join(token)) {
             $("#message").prop("disabled", false).focus();
-            channel.server.send("");
+            //channel.server.send("");
         } else {
             channel.client.sendInfo("Join failed");
         }
