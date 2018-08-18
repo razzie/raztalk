@@ -97,6 +97,7 @@
     <EmbeddedResource Include="Content\scrollreveal.min.js" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandParser.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="CustomBootstrapper.cs" />
     <Compile Include="Channel.cs" />
