@@ -28,9 +28,9 @@ namespace raztalk
     {
         public void Configuration(IAppBuilder app)
         {
-            GlobalHost.Configuration.ConnectionTimeout = TimeSpan.FromSeconds(Connection.KeepAliveTimeout * 9);
-            GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromSeconds(Connection.KeepAliveTimeout * 3);
-            GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(Connection.KeepAliveTimeout);
+            GlobalHost.Configuration.ConnectionTimeout = TimeSpan.FromTicks(Connection.KeepAliveTimeout.Ticks * 9);
+            GlobalHost.Configuration.DisconnectTimeout = TimeSpan.FromTicks(Connection.KeepAliveTimeout.Ticks * 3);
+            GlobalHost.Configuration.KeepAlive = Connection.KeepAliveTimeout;
 
             //var listener = (HttpListener)app.Properties["System.Net.HttpListener"];
             //listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
