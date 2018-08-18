@@ -35,7 +35,7 @@ namespace raztalk
     public class Connection : IPrincipal
     {
         static private ConcurrentDictionary<string, Connection> m_connections = new ConcurrentDictionary<string, Connection>();
-        static public int KeepAliveTimeout { get; } = 15;
+        static public TimeSpan KeepAliveTimeout { get; } = TimeSpan.FromSeconds(15);
 
         private Timer m_timer;
 
@@ -67,7 +67,7 @@ namespace raztalk
 
         private void StartKeepAliveTimer()
         {
-            m_timer = new Timer(KeepAliveTimeout * 1000); // wait for max N seconds until signalR is connected
+            m_timer = new Timer(KeepAliveTimeout.TotalMilliseconds); // wait for max N seconds until signalR is connected
             m_timer.Elapsed += KeepAliveExpired;
             m_timer.AutoReset = false;
             m_timer.Enabled = true;

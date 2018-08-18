@@ -60,6 +60,7 @@ namespace raztalk
         public IEnumerable<User> Users { get { return m_users; } }
         public IEnumerable<Message> Messages { get { return m_messages; } }
         public uint MaxHistory { get; private set; }
+        public TimeSpan KeepAliveTimeout { get; private set; } = TimeSpan.FromMinutes(5);
 
         public void AddMessage(Message message)
         {
@@ -109,7 +110,7 @@ namespace raztalk
             if (m_timer != null)
                 KillTimeout();
 
-            m_timer = new Timer(TimeSpan.FromMinutes(5).TotalMilliseconds);
+            m_timer = new Timer(KeepAliveTimeout.TotalMilliseconds);
             m_timer.Elapsed += TimeoutExpired;
             m_timer.AutoReset = false;
             m_timer.Enabled = true;
