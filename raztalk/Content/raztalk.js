@@ -12,12 +12,6 @@
         return this.replace(/^\s+|\s+$/g, "");
     };
 
-    //function linkify(str) {
-    //    return str.replace(/(<a href=")?((https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)))(">(.*)<\/a>)?/gi, function () {
-    //        return '<a href="' + arguments[2] + '">' + (arguments[7] || arguments[2]) + '</a>'
-    //    });
-    //}
-
     function fileExtension(url) {
         return (url = url.substr(1 + url.lastIndexOf("/")).split('?')[0]).split('#')[0].substr(url.lastIndexOf(".")).toLowerCase();
     }
@@ -52,7 +46,9 @@
 
         sr.reveal('.reveal');
         $("html, body").scrollTop($(document).height());
-        $.playSound("/content/notification.mp3");
+        if (!isActive) {
+            $.playSound("/content/notification.mp3");
+        }
     }
 
     function reconnect() {
@@ -103,7 +99,6 @@
 
         if (channel.server.join(token)) {
             $("#message").prop("disabled", false).focus();
-            //channel.server.send("");
         } else {
             channel.client.sendInfo("Join failed");
         }
