@@ -48,7 +48,6 @@ namespace raztalk
         {
             Name = channelname;
             Password = channelpw;
-            MaxHistory = 20;
             m_users.Add(creator);
 
             if (!m_channels.TryAdd(Name.ToLower(), this))
@@ -59,8 +58,8 @@ namespace raztalk
         public string Password { get; private set; }
         public IEnumerable<User> Users { get { return m_users; } }
         public IEnumerable<Message> Messages { get { return m_messages; } }
-        public uint MaxHistory { get; private set; }
-        public TimeSpan KeepAliveTimeout { get; private set; } = TimeSpan.FromMinutes(5);
+        public uint MaxHistory { get; private set; } = 100;
+        public TimeSpan KeepAliveTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
         public void AddMessage(Message message)
         {

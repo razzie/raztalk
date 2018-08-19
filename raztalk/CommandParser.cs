@@ -28,6 +28,26 @@ namespace raztalk
         private Dictionary<string, Delegate> m_commands = new Dictionary<string, Delegate>();
         private List<string> m_last_errors = new List<string>();
 
+        public void Add<T>(string template, Action<T> method)
+        {
+            Add(template, (Delegate)method);
+        }
+
+        public void Add<T1, T2>(string template, Action<T1, T2> method)
+        {
+            Add(template, (Delegate)method);
+        }
+
+        public void Add<T1, T2, T3>(string template, Action<T1, T2, T3> method)
+        {
+            Add(template, (Delegate)method);
+        }
+
+        public void Add<T1, T2, T3, T4>(string template, Action<T1, T2, T3, T4> method)
+        {
+            Add(template, (Delegate)method);
+        }
+
         public void Add(string template, Delegate method)
         {
             m_commands.Add(template, method);

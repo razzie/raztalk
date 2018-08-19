@@ -38,6 +38,7 @@ namespace raztalk
         static public TimeSpan KeepAliveTimeout { get; } = TimeSpan.FromSeconds(15);
 
         private Timer m_timer;
+        private CommandParser m_cmdparser = new CommandParser();
 
         public User User { get; private set; }
         public Channel Channel { get; private set; }
@@ -58,6 +59,9 @@ namespace raztalk
             StartKeepAliveTimer();
 
             SendInfo(User.Name + " is connecting...");
+
+            m_cmdparser.Add<uint>("!keepalive {0}m", CmdKeepAliveChannelMinutes);
+            m_cmdparser.Add<uint>("!keepalive {0}h", CmdKeepAliveChannelHours);
         }
 
         ~Connection()
@@ -83,6 +87,18 @@ namespace raztalk
             }
         }
 
+        private void CmdKeepAliveChannelMinutes(uint m)
+        {
+            Channel.KeepAliveTimeout = TimeSpan.FromMinutes(m);
+            SendInfo(string.Format("Keep alive timeout for this channel is {0} minute(s)", m));
+        }
+
+        private void CmdKeepAliveChannelHours(uint h)
+        {
+            Channel.KeepAliveTimeout = TimeSpan.FromHours(h);
+            SendInfo(string.Format("Keep alive timeout for this channel is {0} hour(s)", h));
+        }
+
         private void KeepAliveExpired(object sender, ElapsedEventArgs e)
         {
             KillKeepAliveTimer();
@@ -106,6 +122,15 @@ namespace raztalk
 
             Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
             Channel.AddMessage(message);
+
+            if (text.StartsWith("!"))
+            {
+                m_cmdparser.Exec(text);
+                foreach (var error in m_cmdparser.LastErrors)
+                {
+                    SendInfo(error);
+                }
+            }
         }
 
         public void SendInfo(string info)
