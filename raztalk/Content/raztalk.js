@@ -121,5 +121,7 @@
         $(".reconnect").click(reconnect);
     });
 
+    history.pushState({}, "", "/channel/" + channelname);
+
     sr.reveal('.reveal');
 });

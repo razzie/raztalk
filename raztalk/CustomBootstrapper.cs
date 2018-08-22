@@ -64,7 +64,7 @@ namespace raztalk
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
         {
             base.ApplicationStartup(container, pipelines);
-            CookieBasedSessions.Enable(pipelines);
+            //CookieBasedSessions.Enable(pipelines);
             StaticConfiguration.DisableErrorTraces = false;
             SSLProxy.RewriteSchemeUsingForwardedHeaders(pipelines);
         }

@@ -5,7 +5,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>RazTalk - @Model.Channel.Name</title>
+		<title>RazTalk - @ViewBag.Channel.Value.Name</title>
 		<link href="/content/bootstrap.min.css" rel="stylesheet">
 		<link href="/content/jquery.oembed.css" rel="stylesheet">
 		<link href="/content/raztalk.css" rel="stylesheet">
@@ -16,17 +16,17 @@
 		<![endif]-->
 		<script src="/content/scrollreveal.min.js"></script>
 	</head>
-	<body class="container" data-token="@Model.Token" data-user="@Model.User.Name" data-channel="@Model.Channel.Name" data-pw="@Model.Channel.Password">
+	<body class="container" data-token="@ViewBag.Token.Value" data-user="@ViewBag.User.Value.Name" data-channel="@ViewBag.Channel.Value.Name" data-pw="@ViewBag.Channel.Value.Password">
 		<header class="row justify-content-center text-center reveal">
-			<span class="m-2">User: <strong>@Model.User.Name</strong></span>
-			<span class="m-2">Channel: <strong>@Model.Channel.Name</strong></span>
+			<span class="m-2">User: <strong>@ViewBag.User.Value.Name</strong></span>
+			<span class="m-2">Channel: <strong>@ViewBag.Channel.Value.Name</strong></span>
 		</header>
 		<section class="row">
 			<table id="messages">
 				<tbody>
 					<tr class="info reveal">
 						<td></td>
-						<td id="users">Connected users: @Model.Users</td>
+						<td id="users">Connected users: @ViewBag.Users.Value</td>
 					</tr>
 				</tbody>
 			</table>
