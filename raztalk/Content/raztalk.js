@@ -6,11 +6,20 @@
     var username = $("body").data("user");
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
-    var lastTimestamp = "1970/01/01 00:00:00";
+    var lastTimestamp = 0;
 
     String.prototype.trim = function () {
         return this.replace(/^\s+|\s+$/g, "");
     };
+    Date.prototype.razformat = function () {
+        var year = this.getFullYear();
+        var month = this.getMonth();
+        var day = this.getDay();
+        var hour = this.getHours();
+        var minute = this.getMinutes();
+        var second = this.getSeconds();
+        return year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second;
+    }
 
     function fileExtension(url) {
         return (url = url.substr(1 + url.lastIndexOf("/")).split('?')[0]).split('#')[0].substr(url.lastIndexOf(".")).toLowerCase();
@@ -30,6 +39,11 @@
            return user;
         }
     }
+    function addSeparator(timestamp) {
+        var ts = new Date(timestamp)
+        var separator = "<tr><td colspan=\"2\" class=\"text-right\"><hr /></td></tr>";
+        $("#messages tr:last").after(separator);
+    }
     function addRow(row) {
         $("#messages tr:last").after(row);
         msg = $("#messages tr:last pre");
@@ -46,7 +60,10 @@
 
         sr.reveal('.reveal');
         $("html, body").scrollTop($(document).height());
+
         if (!isActive) {
+            unread += 1;
+            document.title = "(+" + unread + ") RazTalk - " + channelname;
             $.playSound("/content/notification.mp3");
         }
     }
@@ -67,19 +84,22 @@
     });
 
     channel.client.send = function (user, message, timestamp) {
+        if ((timestamp - lastTimestamp) > 600000) {
+            addSeparator(timestamp);
+        }
         row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + message + "</pre></td></tr>";
         addRow(row);
-        if (!isActive) {
-            unread += 1;
-            document.title = "(+" + unread + ") RazTalk - " + channelname;
-        }
         lastMsgUser = user;
         lastTimestamp = timestamp;
     };
     channel.client.sendInfo = function (info, timestamp) {
+        if ((timestamp - lastTimestamp) > 300000) {
+            addSeparator(timestamp);
+        }
         row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + info + "</td></tr>";
         addRow(row);
         lastMsgUser = "";
+        lastTimestamp = timestamp;
     };
     channel.client.updateUsers = function (users) {
         $("#users").text("Connected users: " + users);
