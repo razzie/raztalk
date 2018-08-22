@@ -40,40 +40,30 @@ namespace raztalk.Modules
             }
         }
 
-        public bool Login(string username, string channelname, string channelpw, string last_timestamp)
+        public bool Login(string username, string channelname, string channelpw, long last_timestamp)
         {
-            try
+            Connection connection;
+            if (m_connections.TryRemove(Context.ConnectionId, out connection))
             {
-                Connection connection;
-                if (m_connections.TryRemove(Context.ConnectionId, out connection))
-                {
-                    connection.Close();
-                }
+                connection.Close();
+            }
 
-                connection = Connection.Open(username, channelname, channelpw);
-                var joined = Join(connection.Token);
+            connection = Connection.Open(username, channelname, channelpw);
+            var joined = Join(connection.Token);
 
-                if (joined)
+            if (joined)
+            {
+                var ts = new DateTime(last_timestamp * TimeSpan.TicksPerMillisecond);
+                foreach (var msg in connection.Channel.Messages)
                 {
-                    var ts = DateTime.ParseExact(last_timestamp, Message.TimestampFormat, CultureInfo.InvariantCulture);
-                    foreach (var msg in connection.Channel.Messages)
+                    if (msg.Timestamp > ts)
                     {
-                        if (msg.Timestamp > ts)
-                        {
-                            if (msg.SystemMessage)
-                                Clients.Caller.SendInfo(msg.Text, msg.TimestampStr);
-                            else
-                                Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampStr);
-                        }
+                        if (msg.SystemMessage)
+                            Clients.Caller.SendInfo(msg.Text, msg.TimestampMs);
+                        else
+                            Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
                     }
                 }
-            }
-            catch (FormatException)
-            {
-                return true;
-            }
-            catch (Exception)
-            {
             }
             
             return false;
@@ -87,9 +77,9 @@ namespace raztalk.Modules
                 foreach (var msg in connection.Channel.Messages)
                 {
                     if (msg.SystemMessage)
-                        Clients.Caller.SendInfo(msg.Text, msg.TimestampStr);
+                        Clients.Caller.SendInfo(msg.Text, msg.TimestampMs);
                     else
-                        Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampStr);
+                        Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
                 }
 
                 return true;

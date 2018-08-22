@@ -120,7 +120,7 @@ namespace raztalk
 
             Message message = new Message(User, text);
 
-            Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampStr);
+            Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampMs);
             Channel.AddMessage(message);
 
             if (text.StartsWith("!"))
@@ -139,7 +139,7 @@ namespace raztalk
                 return;
 
             Message message = new Message(User.System, info);
-            Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampStr);
+            Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampMs);
             Channel.AddMessage(message);
         }
 
