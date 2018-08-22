@@ -26,7 +26,8 @@ namespace raztalk
     public class CommandParser
     {
         private Dictionary<string, Delegate> m_commands = new Dictionary<string, Delegate>();
-        private List<string> m_last_errors = new List<string>();
+
+        public event EventHandler<Exception> Exceptions;
 
         public void Add<T>(string template, Action<T> method)
         {
@@ -57,8 +58,6 @@ namespace raztalk
         {
             foreach (var cmd in m_commands)
             {
-                m_last_errors.Clear();
-
                 try
                 {
                     var args = ReverseStringFormat(cmd.Key, cmdline);
@@ -69,14 +68,9 @@ namespace raztalk
                 }
                 catch (Exception e)
                 {
-                    m_last_errors.Add(e.Message);
+                    Exceptions?.Invoke(this, e);
                 }
             }
-        }
-
-        public IEnumerable<string> LastErrors
-        {
-            get { return m_last_errors; }
         }
 
         private List<string> ReverseStringFormat(string template, string str)
