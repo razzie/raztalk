@@ -26,23 +26,29 @@ namespace raztalk.Modules
     {
         public ChannelModule()
         {
-            Get["/channel/{channel_name}"] = ctx =>
+            After += ctx =>
             {
                 this.RequiresHttps();
+            };
 
-                var token = (string)Context.Request.Session["connection"];
-                var connection = Connection.Get(token);
+            Get["/view-channel/{token}"] = ctx =>
+            {
+                var connection = Connection.Get((string)ctx.token);
 
                 if (connection == null)
                     return Response.AsRedirect("/");
 
-                dynamic model = new ExpandoObject();
-                model.Token = connection.Token.ToString();
-                model.User = connection.User;
-                model.Users = connection.Channel.Users.AsString();
-                model.Channel = connection.Channel;
+                ViewBag.Token = connection.Token;
+                ViewBag.User = connection.User;
+                ViewBag.Users = connection.Channel.Users.AsString();
+                ViewBag.Channel = connection.Channel;
 
-                return View["channel", model];
+                return View["channel"];
+            };
+
+            Get["/channel/{channel_name}"] = ctx =>
+            {
+                return Response.AsRedirect("/login/" + (string)ctx.channel_name);
             };
 
             Get["/channel-stats"] = ctx =>

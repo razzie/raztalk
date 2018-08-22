@@ -17,9 +17,9 @@
 	</head>
 	<body class="container">
 		<header class="row justify-content-center text-center reveal">
-		@if (Model.Error != null)
+		@if (ViewBag.Error.HasValue)
 		{
-			<strong class="text-danger">@Model.Error</strong>
+			<strong class="text-danger">@ViewBag.Error.Value</strong>
 		}
 		</header>
 		<section>
@@ -31,8 +31,15 @@
 							<input type="text" name="user" />
 						</div>
 						<div class="m-2">
-							<strong>Channel:</strong><br />
+                        @if (ViewBag.Channel.HasValue)
+                        {
+                            <input type="hidden" name="channel" value="@ViewBag.Channel.Value.Name" />
+                        }
+                        else
+                        {
+                            <strong>Channel:</strong><br />
 							<input type="text" name="channel" />
+                        }
 						</div>
 						<div class="m-2">
 							<strong>Password:</strong><br />

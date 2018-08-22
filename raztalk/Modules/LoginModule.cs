@@ -18,10 +18,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using Nancy;
 using Nancy.ModelBinding;
-using Nancy.Responses.Negotiation;
 using Nancy.Security;
 using System;
-using System.Dynamic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -53,39 +51,37 @@ namespace raztalk.Modules
 
         public LoginModule()
         {
-            Get["/"] = _ =>
+            After += ctx =>
             {
                 this.RequiresHttps();
+            };
 
-                dynamic model = new ExpandoObject();
-                model.Error = null;
+            Get["/"] = ctx =>
+            {
+                return View["login"];
+            };
 
-                return View["login", model];
+            Get["/login/{channel_name}"] = ctx =>
+            {
+                ViewBag.Channel = (string)ctx.channel_name;
+                return View["login"];
             };
 
             Post["/"] = ctx =>
             {
-                this.RequiresHttps();
-
                 try
                 {
                     var data = this.Bind<LoginData>();
                     var connection = Connection.Open(data.User, data.Channel, data.PasswordMD5);
-                    Context.Request.Session["connection"] = connection.Token;
-                    return Response.AsRedirect("/channel/" + connection.Channel.Name);
+                    return Response.AsRedirect("/view-channel/" + connection.Token);
                 }
                 catch (Exception e)
                 {
-                    return Fail(e.Message);
+                    ViewBag.Error = e.Message;
                 }
-            };
-        }
 
-        private Negotiator Fail(string error)
-        {
-            dynamic model = new ExpandoObject();
-            model.Error = error;
-            return View["login", model];
+                return View["login"];
+            };
         }
     }
 }
