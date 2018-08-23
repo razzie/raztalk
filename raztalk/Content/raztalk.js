@@ -13,8 +13,8 @@
     };
     Date.prototype.razformat = function () {
         var year = this.getFullYear();
-        var month = this.getMonth();
-        var day = this.getDay();
+        var month = this.getMonth() + 1;
+        var day = this.getDate();
         var hour = this.getHours();
         var minute = this.getMinutes();
         var second = this.getSeconds();
@@ -62,7 +62,7 @@
         if ((timestamp - lastMsgTimestamp) > 600000) {
             lastMsgUser = "";
             var ts = new Date(timestamp)
-            var separator = "<tr><td colspan=\"2\" class=\"text-right\"><hr /></td></tr>";
+            var separator = "<tr><td colspan=\"2\" class=\"text-right\"><small>" + ts.razformat() + "</small><hr /></td></tr>";
             $("#messages tr:last").after(separator);
         }
 
