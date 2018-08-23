@@ -23,7 +23,7 @@ using System.Text.RegularExpressions;
 
 namespace raztalk
 {
-    public class CommandParser
+    public class CommandParser : IDisposable
     {
         private Dictionary<string, Delegate> m_commands = new Dictionary<string, Delegate>();
 
@@ -105,6 +105,12 @@ namespace raztalk
             }
 
             method.DynamicInvoke(converted_args.ToArray());
+        }
+
+        public void Dispose()
+        {
+            m_commands.Clear();
+            Exceptions = null;
         }
     }
 }

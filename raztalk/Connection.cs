@@ -160,6 +160,9 @@ namespace raztalk
             Channel = null;
             Password = null;
             Token = string.Empty;
+
+            m_cmdparser?.Dispose();
+            m_cmdparser = null;
         }
 
         public IIdentity Identity
