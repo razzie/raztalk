@@ -41,9 +41,10 @@ namespace raztalk
         public string Text { get; private set; }
         public DateTime Timestamp { get; private set; }
         public string TimestampStr { get { return Timestamp.ToString(TimestampFormat, CultureInfo.InvariantCulture); } }
-        public long TimestampMs { get { return Timestamp.Ticks / TimeSpan.TicksPerMillisecond; } }
+        public long TimestampMs { get { return (long)(Timestamp - Epoch).TotalMilliseconds; } }
         public bool SystemMessage { get { return User == User.System; } }
 
+        static public DateTime Epoch { get; } = new DateTime(1970, 1, 1);
         static public string TimestampFormat { get; } = "yyyy/MM/dd hh:mm:ss";
     }
 }
