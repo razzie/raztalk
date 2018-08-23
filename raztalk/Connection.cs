@@ -134,7 +134,7 @@ namespace raztalk
                 return;
 
             Message message = new Message(User.System, info);
-            Hub.Clients.Group(Channel.Name).SendInfo(message.Text, message.TimestampMs);
+            Hub.Clients.Group(Channel.Name).Send(string.Empty, message.Text, message.TimestampMs);
             Channel.AddMessage(message);
         }
 
