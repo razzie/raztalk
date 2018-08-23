@@ -6,7 +6,7 @@
     var username = $("body").data("user");
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
-    var lastTimestamp = 0;
+    var lastMsgTimestamp = 0;
 
     String.prototype.trim = function () {
         return this.replace(/^\s+|\s+$/g, "");
@@ -39,12 +39,40 @@
            return user;
         }
     }
-    function addSeparator(timestamp) {
-        var ts = new Date(timestamp)
-        var separator = "<tr><td colspan=\"2\" class=\"text-right\"><hr /></td></tr>";
-        $("#messages tr:last").after(separator);
+    function errorMsg(err) {
+        channel.client.send("", err, lastMsgTimestamp)
     }
-    function addRow(row) {
+
+    function reconnect() {
+        $.connection.hub.start().done(function () {
+            channel.client.requestLogin();
+        });
+    }
+
+    $(window).focus(function (event) {
+        isActive = true;
+        unread = 0;
+        document.title = "RazTalk - " + channelname;
+    });
+    $(window).blur(function (event) {
+        isActive = false;
+    });
+
+    channel.client.send = function (user, message, timestamp) {
+        if ((timestamp - lastMsgTimestamp) > 600000) {
+            lastMsgUser = "";
+            var ts = new Date(timestamp)
+            var separator = "<tr><td colspan=\"2\" class=\"text-right\"><hr /></td></tr>";
+            $("#messages tr:last").after(separator);
+        }
+
+        var row;
+        if (user == "") {
+            row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + message + "</td></tr>";
+        } else {
+            row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + message + "</pre></td></tr>";
+        }
+
         $("#messages tr:last").after(row);
         msg = $("#messages tr:last pre");
 
@@ -66,51 +94,20 @@
             document.title = "(+" + unread + ") RazTalk - " + channelname;
             $.playSound("/content/notification.mp3");
         }
-    }
 
-    function reconnect() {
-        $.connection.hub.start().done(function () {
-            channel.client.requestLogin();
-        });
-    }
-
-    $(window).focus(function (event) {
-        isActive = true;
-        unread = 0;
-        document.title = "RazTalk - " + channelname;
-    });
-    $(window).blur(function (event) {
-        isActive = false;
-    });
-
-    channel.client.send = function (user, message, timestamp) {
-        if ((timestamp - lastTimestamp) > 600000) {
-            addSeparator(timestamp);
-        }
-        row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + message + "</pre></td></tr>";
-        addRow(row);
         lastMsgUser = user;
-        lastTimestamp = timestamp;
-    };
-    channel.client.sendInfo = function (info, timestamp) {
-        if ((timestamp - lastTimestamp) > 300000) {
-            addSeparator(timestamp);
-        }
-        row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + info + "</td></tr>";
-        addRow(row);
-        lastMsgUser = "";
-        lastTimestamp = timestamp;
+        lastMsgTimestamp = timestamp;
     };
     channel.client.updateUsers = function (users) {
         $("#users").text("Connected users: " + users);
     }
     channel.client.requestLogin = function () {
         body = $("body");
-        if (channel.server.login(body.data("user"), body.data("channel"), body.data("pw"), lastTimestamp)) {
+        if (channel.server.login(body.data("user"), body.data("channel"), body.data("pw"), lastMsgTimestamp)) {
             $("#message").prop("disabled", false).focus();
             $(".reconnect").removeAttr("href");
         } else {
-            channel.client.sendInfo("Login failed");
+            errorMsg("Login failed");
         }
     }
 
@@ -120,7 +117,7 @@
         if (channel.server.join(token)) {
             $("#message").prop("disabled", false).focus();
         } else {
-            channel.client.sendInfo("Join failed");
+            errorMsg("Join failed");
         }
 
         $("#message").keypress(function (e) {
@@ -137,7 +134,7 @@
     });
     $.connection.hub.disconnected(function () {
         $("#message").prop("disabled", true);
-        channel.client.sendInfo("Disconnected ( <a href=\"#\" class=\"reconnect\" target=\"_self\">Reconnect</a> )");
+        errorMsg("Disconnected ( <a href=\"#\" class=\"reconnect\" target=\"_self\">Reconnect</a> )");
         $(".reconnect").click(reconnect);
     });
 

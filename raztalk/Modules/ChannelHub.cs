@@ -57,12 +57,7 @@ namespace raztalk.Modules
                 foreach (var msg in connection.Channel.Messages)
                 {
                     if (msg.Timestamp > ts)
-                    {
-                        if (msg.SystemMessage)
-                            Clients.Caller.SendInfo(msg.Text, msg.TimestampMs);
-                        else
-                            Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
-                    }
+                        Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
                 }
             }
             
@@ -75,12 +70,7 @@ namespace raztalk.Modules
             if (connection != null && m_connections.TryAdd(Context.ConnectionId, connection))
             {
                 foreach (var msg in connection.Channel.Messages)
-                {
-                    if (msg.SystemMessage)
-                        Clients.Caller.SendInfo(msg.Text, msg.TimestampMs);
-                    else
-                        Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
-                }
+                    Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
 
                 return true;
             }
