@@ -29,6 +29,11 @@ namespace raztalk
 
         public event EventHandler<Exception> Exceptions;
 
+        public void Add(string template, Action method)
+        {
+            Add(template, (Delegate)method);
+        }
+
         public void Add<T>(string template, Action<T> method)
         {
             Add(template, (Delegate)method);

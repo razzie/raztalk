@@ -61,6 +61,7 @@ namespace raztalk
             SendInfo(User.Name + " is connecting...");
 
             m_cmdparser.Exceptions += (o, e) => SendInfo(e.Message);
+            m_cmdparser.Add("!ping", () => SendInfo("pong!"));
             m_cmdparser.Add<uint>("!keepalive {0}m", CmdKeepAliveChannelMinutes);
             m_cmdparser.Add<uint>("!keepalive {0}h", CmdKeepAliveChannelHours);
         }
