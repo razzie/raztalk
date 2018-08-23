@@ -1,5 +1,4 @@
 ﻿$(document).ready(function () {
-    window.sr = ScrollReveal({ reset: true, duration: 250 });
     var isActive = true;
     var unread = 0;
     var lastMsgUser = "";
