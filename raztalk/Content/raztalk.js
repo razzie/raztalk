@@ -12,11 +12,11 @@
     };
     Date.prototype.razformat = function () {
         var year = this.getFullYear();
-        var month = this.getMonth() + 1;
-        var day = this.getDate();
-        var hour = this.getHours();
-        var minute = this.getMinutes();
-        var second = this.getSeconds();
+        var month = ("0" + (this.getMonth() + 1)).slice(-2);
+        var day = ("0" + this.getDate()).slice(-2);
+        var hour = ("0" + this.getHours()).slice(-2);
+        var minute = ("0" + this.getMinutes()).slice(-2);
+        var second = ("0" + this.getSeconds()).slice(-2);
         return year + "/" + month + "/" + day + " " + hour + ":" + minute + ":" + second;
     }
 
