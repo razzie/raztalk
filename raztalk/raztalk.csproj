@@ -126,6 +126,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Content\jquery.linkify.min.js" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\raztalk.bot\raztalk.bot.csproj">
+      <Project>{198ddfc4-e460-4f11-b63b-c2302d47916b}</Project>
+      <Name>raztalk.bot</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Nancy.Viewengines.Razor.1.4.3\build\Nancy.ViewEngines.Razor.targets" Condition="Exists('..\packages\Nancy.Viewengines.Razor.1.4.3\build\Nancy.ViewEngines.Razor.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
