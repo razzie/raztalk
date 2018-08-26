@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk", "raztalk\raztalk.csproj", "{F454A4D9-1904-4722-88B2-5BCBF999A85E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{198DDFC4-E460-4F11-B63B-C2302D47916B} = {198DDFC4-E460-4F11-B63B-C2302D47916B}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.client", "raztalk.client\raztalk.client.csproj", "{578DCD14-C726-4528-8BDC-3D65BB6E6C4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot", "raztalk.bot\raztalk.bot.csproj", "{198DDFC4-E460-4F11-B63B-C2302D47916B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{578DCD14-C726-4528-8BDC-3D65BB6E6C4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{578DCD14-C726-4528-8BDC-3D65BB6E6C4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{578DCD14-C726-4528-8BDC-3D65BB6E6C4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{198DDFC4-E460-4F11-B63B-C2302D47916B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{198DDFC4-E460-4F11-B63B-C2302D47916B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{198DDFC4-E460-4F11-B63B-C2302D47916B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{198DDFC4-E460-4F11-B63B-C2302D47916B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
