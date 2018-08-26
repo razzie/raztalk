@@ -16,8 +16,6 @@ namespace raztalk.bot
         public event NewMessageEvent NewMessage;
         public event ArgChangedEvent ArgChanged;
 
-        public abstract string Name { get; }
-
         public string this[string arg]
         {
             get { return m_args[arg]; }
