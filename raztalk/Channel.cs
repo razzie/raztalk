@@ -136,7 +136,11 @@ namespace raztalk
             {
                 var newbot = Bot.Create(bot);
                 if (newbot != null && m_bots.TryAdd(bot, newbot))
+                {
+                    newbot.UserData = new BotUser(bot);
+                    newbot.NewMessage += (sender, msg) => Send(sender.UserData as User, msg);
                     Send("Bot added");
+                }
             });
 
             m_cmdparser.Add<string>("!remove-bot {0}", bot =>

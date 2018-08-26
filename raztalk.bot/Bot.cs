@@ -16,6 +16,8 @@ namespace raztalk.bot
         public event NewMessageEvent NewMessage;
         public event ArgChangedEvent ArgChanged;
 
+        public object UserData { get; set; }
+
         public string this[string arg]
         {
             get { return m_args[arg]; }
@@ -37,7 +39,7 @@ namespace raztalk.bot
             ArgChanged = null;
         }
         
-        private void FireNewMessage(string message)
+        protected void FireNewMessage(string message)
         {
             NewMessage?.Invoke(this, message);
         }
@@ -47,26 +49,31 @@ namespace raztalk.bot
         
         static Bot()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += (o, args) =>
+            {
+                var botdir = new DirectoryInfo("bots/");
+                string dll = args.Name.Split(',')[0] + ".dll";
+                return Assembly.LoadFile(botdir.GetFiles("*.dll").FirstOrDefault(f => f.Name == dll).FullName);
+            };
+
             //Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             //Type[] types = assemblies.SelectMany(a => a.GetTypes()).ToArray();
             //Bots = types.Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(Bot))).ToArray();
+
             ReloadBots();
         }
 
         static public void ReloadBots()
         {
-            lock (Bots)
+            var bots = new List<Type>();
+            var botdir = new DirectoryInfo("bots/");
+            foreach (var file in botdir.GetFiles("*.dll"))
             {
-                var bots = new List<Type>();
-                var botdir = new DirectoryInfo("bots/");
-                foreach (var file in botdir.GetFiles("*.dll"))
-                {
-                    var dll = Assembly.LoadFile(file.FullName);
-                    bots.AddRange(dll.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(Bot))));
-                }
-
-                Bots = bots.ToArray();
+                var dll = Assembly.LoadFile(file.FullName);
+                bots.AddRange(dll.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(Bot))));
             }
+
+            Bots = bots.ToArray();
         }
 
         static public Bot Create(string bot)
