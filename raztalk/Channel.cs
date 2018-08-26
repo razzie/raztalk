@@ -17,16 +17,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using Microsoft.AspNet.SignalR;
+using raztalk.bot;
 using raztalk.Modules;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
 
 namespace raztalk
 {
-    public class Channel
+    public class Channel : IDisposable
     {
         static private ConcurrentDictionary<string, Channel> m_channels = new ConcurrentDictionary<string, Channel>();
 
@@ -53,6 +55,7 @@ namespace raztalk
         }
 
         private List<User> m_users = new List<User>();
+        private ConcurrentDictionary<string, Bot> m_bots = new ConcurrentDictionary<string, Bot>();
         private ConcurrentQueue<Message> m_messages = new ConcurrentQueue<Message>();
         private CommandParser m_cmdparser = new CommandParser();
         private Timeout m_timeout = new Timeout();
@@ -120,6 +123,41 @@ namespace raztalk
                 KeepAliveTimeout = TimeSpan.FromHours(h);
                 Send(string.Format("Keep alive timeout for this channel is {0} hour(s)", h));
             });
+
+            m_cmdparser.Add("!reload-bots", Bot.ReloadBots);
+
+            m_cmdparser.Add("!bots", () =>
+            {
+                Send("Bots available: " + string.Join(", ", Bot.Bots.Select(t => t.Name).ToArray()));
+                Send("Bots enabled: " + string.Join(", ", m_bots.Keys.ToArray()));
+            });
+
+            m_cmdparser.Add<string>("!add-bot {0}", bot =>
+            {
+                var newbot = Bot.Create(bot);
+                if (newbot != null && m_bots.TryAdd(bot, newbot))
+                    Send("Bot added");
+            });
+
+            m_cmdparser.Add<string>("!remove-bot {0}", bot =>
+            {
+                Bot tmp_bot;
+                if (m_bots.TryRemove(bot, out tmp_bot))
+                {
+                    Send("Bot removed");
+                    tmp_bot.Dispose();
+                }
+            });
+
+            m_cmdparser.Add<string, string, string>("!bot {0} {1}:{2}", (bot, arg, value) =>
+            {
+                Bot tmp_bot;
+                if (m_bots.TryGetValue(bot, out tmp_bot))
+                {
+                    tmp_bot[arg] = value;
+                    Send("Done");
+                }
+            });
         }
 
         private bool Login(User user, string password)
@@ -164,8 +202,22 @@ namespace raztalk
                 {
                     Channel tmp_channel;
                     m_channels.TryRemove(Name, out tmp_channel);
+
+                    Dispose();
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            foreach (var bot in m_bots.Values)
+            {
+                bot.Dispose();
+            }
+
+            m_bots.Clear();
+
+            m_cmdparser.Dispose();
         }
 
         static public Channel Login(User user, string channelname, string channelpw)
