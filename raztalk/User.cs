@@ -41,9 +41,18 @@ namespace raztalk
             Name = username;
         }
 
-        public string Name { get; private set; }
+        public virtual string Name { get; private set; }
 
         static public User System { get; set; } = new User();
+    }
+
+    public class BotUser : User
+    {
+        public BotUser(string username) : base(username)
+        {
+        }
+
+        public override string Name { get { return "[" + base.Name + "]"; } }
     }
 
     public static class UsersExtension

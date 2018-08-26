@@ -73,6 +73,9 @@ namespace raztalk
                 }
                 catch (Exception e)
                 {
+                    // get inner exception
+                    for (; e.InnerException != null; e = e.InnerException) ;
+
                     Exceptions?.Invoke(this, e);
                 }
             }
