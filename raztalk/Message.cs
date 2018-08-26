@@ -25,7 +25,7 @@ namespace raztalk
     {
         public Message(User user, string text)
         {
-            User = user;
+            User = user ?? User.System;
             Text = text;
             Timestamp = DateTime.Now;
         }
