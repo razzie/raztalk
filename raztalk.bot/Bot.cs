@@ -46,30 +46,23 @@ namespace raztalk.bot
 
 
         static public Type[] Bots { get; private set; }
-        static public AppDomain Domain { get; private set; }
-        static private DirectoryInfo BotDir { get; } = new DirectoryInfo("bots/");
+        static private FileInfo[] BotDLLs { get { return new DirectoryInfo("bots/").GetFiles("*.dll"); } }
 
         static Bot()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += (o, args) =>
+            {
+                string dll = args.Name.Split(',')[0] + ".dll";
+                return Assembly.LoadFile(BotDLLs.FirstOrDefault(f => f.Name == dll).FullName);
+            };
+
             ReloadBots();
         }
 
         static public void ReloadBots()
         {
-            if (Domain != null)
-                AppDomain.Unload(Domain);
-
-            var dlls = BotDir.GetFiles("*.dll");
             var bots = new List<Type>();
-
-            Domain = AppDomain.CreateDomain("BotDomain");
-            Domain.AssemblyResolve += (o, args) =>
-            {
-                string dll = args.Name.Split(',')[0] + ".dll";
-                return Assembly.LoadFile(dlls.FirstOrDefault(f => f.Name == dll).FullName);
-            };
-
-            foreach (var file in dlls)
+            foreach (var file in BotDLLs)
             {
                 var dll = Assembly.LoadFile(file.FullName);
                 bots.AddRange(dll.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(Bot))));

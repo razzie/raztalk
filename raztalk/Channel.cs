@@ -104,6 +104,9 @@ namespace raztalk
             
             if (text.StartsWith("!"))
                 m_cmdparser.Exec(text);
+
+            foreach (var bot in m_bots.Values)
+                bot.ConsumeMessage(message.User.Name, message.Text, message.Timestamp);
         }
 
         private void InitCommands()
