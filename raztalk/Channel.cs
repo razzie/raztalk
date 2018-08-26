@@ -16,6 +16,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
+using Microsoft.AspNet.SignalR;
+using raztalk.Modules;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,9 +42,20 @@ namespace raztalk
             }
         }
 
+        static private IHubContext Hub
+        {
+            get { return GlobalHost.ConnectionManager.GetHubContext<ChannelHub>(); }
+        }
+
+        private dynamic HubGroup
+        {
+            get { return Hub.Clients.Group(Name); }
+        }
+
         private List<User> m_users = new List<User>();
         private ConcurrentQueue<Message> m_messages = new ConcurrentQueue<Message>();
-        private Timer m_timer;
+        private CommandParser m_cmdparser = new CommandParser();
+        private Timeout m_timeout = new Timeout();
 
         private Channel(string channelname, string channelpw, User creator)
         {
@@ -52,6 +65,10 @@ namespace raztalk
 
             if (!m_channels.TryAdd(Name.ToLower(), this))
                 throw new Exception("Internal channel error");
+
+            m_timeout.Expired += TimeoutExpired;
+
+            InitCommands();
         }
 
         public string Name { get; private set; }
@@ -61,15 +78,48 @@ namespace raztalk
         public uint MaxHistory { get; private set; } = 100;
         public TimeSpan KeepAliveTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
-        public void AddMessage(Message message)
+        public void Send(string text)
         {
+            Send(null, text);
+        }
+
+        public void Send(User user, string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return;
+
+            Message message = new Message(user, text);
+
             m_messages.Enqueue(message);
+            HubGroup.Send(message.User.Name, message.Text, message.TimestampMs);
 
             if (m_messages.Count > MaxHistory)
             {
                 Message tmp_message;
                 m_messages.TryDequeue(out tmp_message);
             }
+            
+            if (text.StartsWith("!"))
+                m_cmdparser.Exec(text);
+        }
+
+        private void InitCommands()
+        {
+            m_cmdparser.Exceptions += (o, e) => Send(e.Message);
+
+            m_cmdparser.Add("!ping", () => Send("pong!"));
+
+            m_cmdparser.Add("!users", () => Send("Current users: " + Users.AsString()));
+
+            m_cmdparser.Add<uint>("!keepalive {0}m", m => {
+                KeepAliveTimeout = TimeSpan.FromMinutes(m);
+                Send(string.Format("Keep alive timeout for this channel is {0} minute(s)", m));
+            });
+
+            m_cmdparser.Add<uint>("!keepalive {0}h", h => {
+                KeepAliveTimeout = TimeSpan.FromHours(h);
+                Send(string.Format("Keep alive timeout for this channel is {0} hour(s)", h));
+            });
         }
 
         private bool Login(User user, string password)
@@ -84,8 +134,9 @@ namespace raztalk
 
                 if (Password.Equals(password))
                 {
-                    KillTimeout();
+                    m_timeout.Stop();
                     m_users.Add(user);
+                    HubGroup.UpdateUsers(Users.AsString());
                     return true;
                 }
             }
@@ -98,37 +149,15 @@ namespace raztalk
             lock (m_users)
             {
                 m_users.Remove(user);
+                HubGroup.UpdateUsers(Users.AsString());
 
                 if (m_users.Count == 0)
-                    StartTimeout();
-            }
-        }
-
-        private void StartTimeout()
-        {
-            if (m_timer != null)
-                KillTimeout();
-
-            m_timer = new Timer(KeepAliveTimeout.TotalMilliseconds);
-            m_timer.Elapsed += TimeoutExpired;
-            m_timer.AutoReset = false;
-            m_timer.Enabled = true;
-        }
-
-        private void KillTimeout()
-        {
-            if (m_timer != null)
-            {
-                m_timer.Elapsed -= TimeoutExpired;
-                m_timer.Dispose();
-                m_timer = null;
+                    m_timeout.Start(KeepAliveTimeout);
             }
         }
 
         private void TimeoutExpired(object sender, ElapsedEventArgs e)
         {
-            KillTimeout();
-
             lock (m_users)
             {
                 if (m_users.Count == 0)

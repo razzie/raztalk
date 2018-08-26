@@ -16,8 +16,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
-using Microsoft.AspNet.SignalR;
-using raztalk.Modules;
 using System;
 using System.Collections.Concurrent;
 using System.Security.Principal;
@@ -37,8 +35,7 @@ namespace raztalk
         static private ConcurrentDictionary<string, Connection> m_connections = new ConcurrentDictionary<string, Connection>();
         static public TimeSpan KeepAliveTimeout { get; } = TimeSpan.FromSeconds(15);
 
-        private Timer m_timer;
-        private CommandParser m_cmdparser = new CommandParser();
+        private Timeout m_timeout = new Timeout();
 
         public User User { get; private set; }
         public Channel Channel { get; private set; }
@@ -56,14 +53,10 @@ namespace raztalk
             if (!m_connections.TryAdd(Token, this))
                 throw new Exception("Internal connection error");
 
-            StartKeepAliveTimer();
+            m_timeout.Expired += (o, e) => Close();
+            m_timeout.Start(KeepAliveTimeout);
 
             SendInfo(User.Name + " is connecting...");
-
-            m_cmdparser.Exceptions += (o, e) => SendInfo(e.Message);
-            m_cmdparser.Add("!ping", () => SendInfo("pong!"));
-            m_cmdparser.Add<uint>("!keepalive {0}m", CmdKeepAliveChannelMinutes);
-            m_cmdparser.Add<uint>("!keepalive {0}h", CmdKeepAliveChannelHours);
         }
 
         ~Connection()
@@ -71,78 +64,14 @@ namespace raztalk
             Close();
         }
 
-        private void StartKeepAliveTimer()
-        {
-            m_timer = new Timer(KeepAliveTimeout.TotalMilliseconds); // wait for max N seconds until signalR is connected
-            m_timer.Elapsed += KeepAliveExpired;
-            m_timer.AutoReset = false;
-            m_timer.Enabled = true;
-        }
-
-        private void KillKeepAliveTimer()
-        {
-            if (m_timer != null)
-            {
-                m_timer.Elapsed -= KeepAliveExpired;
-                m_timer.Dispose();
-                m_timer = null;
-            }
-        }
-
-        private void CmdKeepAliveChannelMinutes(uint m)
-        {
-            Channel.KeepAliveTimeout = TimeSpan.FromMinutes(m);
-            SendInfo(string.Format("Keep alive timeout for this channel is {0} minute(s)", m));
-        }
-
-        private void CmdKeepAliveChannelHours(uint h)
-        {
-            Channel.KeepAliveTimeout = TimeSpan.FromHours(h);
-            SendInfo(string.Format("Keep alive timeout for this channel is {0} hour(s)", h));
-        }
-
-        private void KeepAliveExpired(object sender, ElapsedEventArgs e)
-        {
-            KillKeepAliveTimer();
-            Close();
-        }
-
-        static private IHubContext Hub
-        {
-            get
-            {
-                return GlobalHost.ConnectionManager.GetHubContext<ChannelHub>();
-            }
-        }
-
         public void SendMessage(string text)
         {
-            if (string.IsNullOrEmpty(text))
-                return;
-
-            Message message = new Message(User, text);
-
-            Hub.Clients.Group(Channel.Name).Send(message.User.Name, message.Text, message.TimestampMs);
-            Channel.AddMessage(message);
-
-            if (text.StartsWith("!"))
-                m_cmdparser.Exec(text);
+            Channel.Send(User, text);
         }
 
-        public void SendInfo(string info)
+        public void SendInfo(string text)
         {
-            if (string.IsNullOrEmpty(info))
-                return;
-
-            Message message = new Message(User.System, info);
-            Hub.Clients.Group(Channel.Name).Send(string.Empty, message.Text, message.TimestampMs);
-            Channel.AddMessage(message);
-        }
-
-        private void UpdateUsers()
-        {
-            string userlist = Channel.Users.AsString();
-            Hub.Clients.Group(Channel.Name).UpdateUsers(userlist);
+            Channel.Send(text);
         }
 
         public void Close()
@@ -151,7 +80,6 @@ namespace raztalk
             {
                 Channel.Logout(User);
                 SendInfo(User.Name + " left");
-                UpdateUsers();
             }
 
             Connection tmp_connection;
@@ -161,9 +89,6 @@ namespace raztalk
             Channel = null;
             Password = null;
             Token = string.Empty;
-
-            m_cmdparser?.Dispose();
-            m_cmdparser = null;
         }
 
         public IIdentity Identity
@@ -202,10 +127,8 @@ namespace raztalk
             Connection connection;
             if (m_connections.TryGetValue(token, out connection))
             {
-                connection.KillKeepAliveTimer();
+                connection.m_timeout.Stop();
                 connection.SendInfo(connection.User.Name + " joined");
-                Hub.Groups.Add(connectionId, connection.Channel.Name);
-                connection.UpdateUsers();
                 connection.ConnectionId = connectionId;
                 return connection;
             }

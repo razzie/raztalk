@@ -19,7 +19,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using Microsoft.AspNet.SignalR;
 using System;
 using System.Collections.Concurrent;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace raztalk.Modules
@@ -69,6 +68,8 @@ namespace raztalk.Modules
             Connection connection = Connection.Join(Context.ConnectionId, token);
             if (connection != null && m_connections.TryAdd(Context.ConnectionId, connection))
             {
+                Groups.Add(Context.ConnectionId, connection.Channel.Name);
+
                 foreach (var msg in connection.Channel.Messages)
                     Clients.Caller.Send(msg.User.Name, msg.Text, msg.TimestampMs);
 
