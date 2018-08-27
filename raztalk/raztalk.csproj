@@ -97,11 +97,14 @@
     <EmbeddedResource Include="Content\scrollreveal.min.js" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BotManager.cs" />
+    <Compile Include="DllDomainManager.cs" />
     <Compile Include="CommandParser.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="CustomBootstrapper.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="Modules\BotModule.cs" />
     <Compile Include="Modules\ChannelHub.cs" />
     <Compile Include="Modules\ChannelModule.cs" />
     <Compile Include="Modules\LoginModule.cs" />
