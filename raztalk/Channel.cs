@@ -22,7 +22,6 @@ using raztalk.Modules;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
 
@@ -55,9 +54,9 @@ namespace raztalk
         }
 
         private List<User> m_users = new List<User>();
-        private ConcurrentDictionary<string, Bot> m_bots = new ConcurrentDictionary<string, Bot>();
         private ConcurrentQueue<Message> m_messages = new ConcurrentQueue<Message>();
         private CommandParser m_cmdparser = new CommandParser();
+        private BotManager m_botmgr = new BotManager();
         private Timeout m_timeout = new Timeout();
 
         private Channel(string channelname, string channelpw, User creator)
@@ -105,8 +104,7 @@ namespace raztalk
             if (text.StartsWith("!"))
                 m_cmdparser.Exec(text);
 
-            foreach (var bot in m_bots.Values)
-                bot.ConsumeMessage(message.User.Name, message.Text, message.Timestamp);
+            m_botmgr.ConsumeMessage(message);
         }
 
         private void InitCommands()
@@ -127,18 +125,16 @@ namespace raztalk
                 Send(string.Format("Keep alive timeout for this channel is {0} hour(s)", h));
             });
 
-            m_cmdparser.Add("!reload-bots", Bot.ReloadBots);
-
             m_cmdparser.Add("!bots", () =>
             {
-                Send("Bots available: " + string.Join(", ", Bot.Bots.Select(t => t.Name).ToArray()));
-                Send("Bots enabled: " + string.Join(", ", m_bots.Keys.ToArray()));
+                Send("Bots available: " + BotManager.Available);
+                Send("Bots enabled: " + m_botmgr.Current);
             });
 
             m_cmdparser.Add<string>("!add-bot {0}", bot =>
             {
-                var newbot = Bot.Create(bot);
-                if (newbot != null && m_bots.TryAdd(bot, newbot))
+                var newbot = m_botmgr.Add(bot);
+                if (newbot != null)
                 {
                     newbot.UserData = new BotUser(bot);
                     newbot.NewMessage += (sender, msg) => Send(sender.UserData as User, msg);
@@ -148,18 +144,16 @@ namespace raztalk
 
             m_cmdparser.Add<string>("!remove-bot {0}", bot =>
             {
-                Bot tmp_bot;
-                if (m_bots.TryRemove(bot, out tmp_bot))
+                if (m_botmgr.Remove(bot))
                 {
                     Send("Bot removed");
-                    tmp_bot.Dispose();
                 }
             });
 
             m_cmdparser.Add<string, string, string>("!bot {0} {1}:{2}", (bot, arg, value) =>
             {
-                Bot tmp_bot;
-                if (m_bots.TryGetValue(bot, out tmp_bot))
+                Bot tmp_bot = m_botmgr.Get(bot);
+                if (tmp_bot != null)
                 {
                     tmp_bot[arg] = value;
                     Send("Done");
@@ -217,14 +211,8 @@ namespace raztalk
 
         public void Dispose()
         {
-            foreach (var bot in m_bots.Values)
-            {
-                bot.Dispose();
-            }
-
-            m_bots.Clear();
-
             m_cmdparser.Dispose();
+            m_botmgr.Dispose();
         }
 
         static public Channel Login(User user, string channelname, string channelpw)
