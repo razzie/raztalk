@@ -17,40 +17,71 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Permissions;
 
 namespace raztalk
 {
     public class RemoteLoader : MarshalByRefObject
     {
         public string Folder { get; set; }
+        public AppDomain Domain { get { return AppDomain.CurrentDomain; } }
+        private Dictionary<AssemblyName, Assembly> LoadedAssemblies { get; } = new Dictionary<AssemblyName, Assembly>();
 
-        public RemoteLoader()
+        static private FileInfo FindDLL(string dir, AssemblyName assembly)
         {
-            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
+            string dll = assembly.Name + ".dll";
+            return new DirectoryInfo(dir).GetFiles().FirstOrDefault(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public Assembly LoadAssembly(string assemblyPath)
+        private FileInfo FindDLL(AssemblyName assembly)
         {
-            return Assembly.LoadFrom(assemblyPath);
+            return FindDLL(Domain.BaseDirectory, assembly) ?? FindDLL(Domain.BaseDirectory + Folder, assembly);
         }
 
-        public Assembly AssemblyResolve(object o, ResolveEventArgs e)
+        private Assembly LoadAssembly(AssemblyName assembly)
         {
-            string dll = new AssemblyName(e.Name).Name + ".dll";
+            if (LoadedAssemblies.ContainsKey(assembly))
+            {
+                return LoadedAssemblies[assembly];
+            }
 
-            FileInfo file = new DirectoryInfo("/").GetFiles().First(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
-            if (file != null)
-                return Assembly.LoadFile(file.FullName);
+            FileInfo dll = FindDLL(assembly);
+            if (dll != null)
+            {
+                return LoadDependencies(Assembly.LoadFile(dll.FullName));
+            }
 
-            file = new DirectoryInfo(Folder).GetFiles().First(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
-            if (file != null)
-                return Assembly.LoadFile(file.FullName);
+            return Assembly.Load(assembly);
+        }
 
-            return AppDomain.CurrentDomain.Load(e.Name);
+        private Assembly LoadDependencies(Assembly assembly)
+        {
+            foreach (var dep in assembly.GetReferencedAssemblies())
+            {
+                if (!LoadedAssemblies.ContainsKey(dep))
+                {
+                    var loaded_dep = LoadAssembly(dep);
+                    LoadedAssemblies.Add(loaded_dep.GetName(), loaded_dep);
+                }
+            }
+
+            return assembly;
+        }
+
+        public string[] LoadAssemblyClasses(AssemblyName assembly)
+        {
+            return LoadAssembly(assembly).Subclasses(typeof(MarshalByRefObject)).ToArray();
+        }
+    }
+
+    static class AssemblyExtensions
+    {
+        static public IEnumerable<string> Subclasses(this Assembly assembly, Type basetype)
+        {
+            return assembly.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(basetype)).Select(c => c.Name);
         }
     }
 }

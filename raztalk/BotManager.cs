@@ -33,7 +33,7 @@ namespace raztalk
         {
             get
             {
-                return string.Join(", ", Domain.Classes.Select(t => t.Name).ToArray());
+                return string.Join(", ", Domain.Classes.Keys.ToArray());
             }
         }
 

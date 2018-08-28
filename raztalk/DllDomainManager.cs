@@ -32,13 +32,12 @@ namespace raztalk
         public event EventHandler<AppDomain> Unloaded;
 
         static private string AppFolder { get; } = AppDomain.CurrentDomain.BaseDirectory;
-        static private string CacheFolder { get; } = AppDomain.CurrentDomain.BaseDirectory + "cache/";
         private AppDomain Domain { get; set; }
         private RemoteLoader Loader { get; set; }
         private string Folder { get; set; }
         private FileInfo[] DLLs { get { return new DirectoryInfo(Folder).GetFiles("*.dll"); } }
         private Dictionary<string, string> Assemblies { get; } = new Dictionary<string, string>();
-        public Type[] Classes { get; private set; } = new Type[0];
+        public Dictionary<string, string> Classes { get; } = new Dictionary<string, string>();
 
         public DllDomainManager(string folder)
         {
@@ -48,13 +47,19 @@ namespace raztalk
 
         public MarshalByRefObject Create(string typename)
         {
-            foreach (var type in Classes)
+            //foreach (var type in Classes)
+            //{
+            //    if (type.Name.Equals(typename))
+            //    {
+            //        string assemblyname = type.Assembly.GetName().Name;
+            //        return (MarshalByRefObject)Domain.CreateInstanceAndUnwrap(assemblyname, typename);
+            //    }
+            //}
+
+            string assembly;
+            if (Classes.TryGetValue(typename, out assembly))
             {
-                if (type.Name.Equals(typename))
-                {
-                    string assemblyname = type.Assembly.GetName().Name;
-                    return (MarshalByRefObject)Domain.CreateInstanceAndUnwrap(assemblyname, typename);
-                }
+                return (MarshalByRefObject)Domain.CreateInstanceAndUnwrap(assembly, typename);
             }
 
             return null;
@@ -66,20 +71,21 @@ namespace raztalk
             {
                 ApplicationName = "raztalk",
                 //ShadowCopyFiles = "true",
-                //CachePath = CacheFolder,
-                //ShadowCopyDirectories = CacheFolder,
+                //CachePath = AppFolder,
+                //ShadowCopyDirectories = AppFolder,
                 ApplicationBase = AppFolder,
                 PrivateBinPath = AppFolder
             };
 
-            var permissions = new PermissionSet(PermissionState.None);
-            permissions.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.PathDiscovery, AppFolder));
-            //permissions.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.Write | FileIOPermissionAccess.PathDiscovery, CacheFolder));
-            permissions.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution | SecurityPermissionFlag.ControlAppDomain));
+            //var permissions = new PermissionSet(PermissionState.None);
+            //permissions.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.PathDiscovery, AppFolder));
+            //permissions.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
+            //permissions.AddPermission(new ReflectionPermission(PermissionState.Unrestricted));
 
-            StrongName[] trust = new StrongName[0];
+            //var signed_assemblies = Assembly.GetExecutingAssembly().GetReferencedAssemblies().Where(a => a.GetPublicKeyToken() != null);
+            //StrongName[] trust = signed_assemblies.Select(a => new StrongName(new StrongNamePublicKeyBlob(a.GetPublicKeyToken()), a.Name, a.Version)).ToArray();
 
-            Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), AppDomain.CurrentDomain.Evidence, setup, permissions, trust);
+            Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), AppDomain.CurrentDomain.Evidence, setup, Assembly.GetExecutingAssembly().PermissionSet);
             Loader = (RemoteLoader)Domain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(RemoteLoader).FullName);
             Loader.Folder = Folder;
         }
@@ -88,16 +94,15 @@ namespace raztalk
         {
             CreateDomain();
 
-            var classes = new List<Type>();
             foreach (var file in DLLs)
             {
                 var aname = AssemblyName.GetAssemblyName(file.FullName);
-                var dll = RemoteLoadDLL(Loader, file.FullName);
+                foreach (var typename in RemoteLoadAssemblyClasses(Loader, aname))
+                {
+                    Classes.Add(typename, aname.Name);
+                }
                 Assemblies.Add(file.FullName, aname.FullName);
-                classes.AddRange(dll.Subclasses(typeof(MarshalByRefObject)));
             }
-
-            Classes = classes.ToArray();
         }
 
         private void Unload()
@@ -109,12 +114,11 @@ namespace raztalk
             Domain = null;
 
             Assemblies.Clear();
-            Classes = null;
+            Classes.Clear();
         }
 
         public void Reload()
         {
-            var classes = new List<Type>();
             foreach (var file in DLLs)
             {
                 var aname = AssemblyName.GetAssemblyName(file.FullName);
@@ -129,13 +133,13 @@ namespace raztalk
                 }
                 else
                 {
-                    var dll = RemoteLoadDLL(Loader, file.FullName);
+                    foreach (var typename in RemoteLoadAssemblyClasses(Loader, aname))
+                    {
+                        Classes.Add(typename, aname.Name);
+                    }
                     Assemblies.Add(file.FullName, aname.FullName);
-                    classes.AddRange(dll.Subclasses(typeof(MarshalByRefObject)));
                 }
             }
-
-            Classes = classes.ToArray();
         }
 
         private void HardReload()
@@ -144,17 +148,9 @@ namespace raztalk
             Load();
         }
 
-        static private Assembly RemoteLoadDLL(RemoteLoader loader, string dll)
+        static private string[] RemoteLoadAssemblyClasses(RemoteLoader loader, AssemblyName assembly)
         {
-            return loader.LoadAssembly(dll);
-        }
-    }
-
-    static class AssemblyExtensions
-    {
-        static public IEnumerable<Type> Subclasses(this Assembly assembly, Type basetype)
-        {
-            return assembly.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(basetype));
+            return loader.LoadAssemblyClasses(assembly);
         }
     }
 }
