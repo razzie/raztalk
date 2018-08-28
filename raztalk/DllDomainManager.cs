@@ -11,35 +11,11 @@ namespace raztalk
         public event EventHandler<AppDomain> Unloaded;
 
         private AppDomain Domain { get; set; }
+        private RemoteLoader Loader { get; set; }
         private string Folder { get; set; }
         private FileInfo[] DLLs { get { return new DirectoryInfo(Folder).GetFiles("*.dll"); } }
         private Dictionary<string, string> Assemblies { get; } = new Dictionary<string, string>();
         public Type[] Classes { get; private set; } = new Type[0];
-        
-        class AssemblyResolveProxy : MarshalByRefObject
-        {
-            private string Folder { get; set; }
-
-            public AssemblyResolveProxy(string folder)
-            {
-                Folder = folder;
-            }
-
-            public Assembly AssemblyResolve(object o, ResolveEventArgs e)
-            {
-                string dll = new AssemblyName(e.Name).Name + ".dll";
-
-                FileInfo file = new DirectoryInfo("/").GetFiles().First(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
-                if (file != null)
-                    return Assembly.LoadFile(file.Name);
-
-                file = new DirectoryInfo(Folder).GetFiles().First(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
-                if (file != null)
-                    return Assembly.LoadFile(Folder + file.Name);
-
-                return AppDomain.CurrentDomain.Load(e.Name);
-            }
-        }
 
         public DllDomainManager(string folder)
         {
@@ -63,8 +39,15 @@ namespace raztalk
 
         private void CreateDomain()
         {
-            Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString());
-            Domain.AssemblyResolve += new AssemblyResolveProxy(Folder).AssemblyResolve;
+            var setup = new AppDomainSetup();
+            setup.ApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
+            setup.PrivateBinPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), null, setup);
+            Loader = (RemoteLoader)Domain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(RemoteLoader).FullName);
+            Loader.Folder = Folder;
+
+            Domain.AssemblyResolve += Loader.AssemblyResolve;
         }
 
         private void Load()
@@ -75,9 +58,9 @@ namespace raztalk
             foreach (var file in DLLs)
             {
                 var aname = AssemblyName.GetAssemblyName(file.FullName);
-                var dll = Domain.Load(aname);
+                var dll = RemoteLoadDLL(Loader, file.FullName); //Domain.Load(aname);
                 Assemblies.Add(file.FullName, aname.FullName);
-                classes.AddRange(dll.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(MarshalByRefObject))));
+                classes.AddRange(dll.Subclasses(typeof(MarshalByRefObject)));
             }
 
             Classes = classes.ToArray();
@@ -112,9 +95,9 @@ namespace raztalk
                 }
                 else
                 {
-                    var dll = Domain.Load(aname);
+                    var dll = RemoteLoadDLL(Loader, file.FullName); //Domain.Load(aname);
                     Assemblies.Add(file.FullName, aname.FullName);
-                    classes.AddRange(dll.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract));
+                    classes.AddRange(dll.Subclasses(typeof(MarshalByRefObject)));
                 }
             }
 
@@ -125,6 +108,19 @@ namespace raztalk
         {
             Unload();
             Load();
+        }
+
+        static private Assembly RemoteLoadDLL(RemoteLoader loader, string dll)
+        {
+            return loader.LoadAssembly(dll);
+        }
+    }
+
+    static class AssemblyExtensions
+    {
+        static public IEnumerable<Type> Subclasses(this Assembly assembly, Type basetype)
+        {
+            return assembly.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(basetype));
         }
     }
 }

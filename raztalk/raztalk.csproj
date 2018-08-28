@@ -109,6 +109,7 @@
     <Compile Include="Modules\ChannelModule.cs" />
     <Compile Include="Modules\LoginModule.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="RemoteLoader.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="StaticResourceConventionBuilder.cs" />
     <Compile Include="Timeout.cs" />
