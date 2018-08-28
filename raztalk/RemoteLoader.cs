@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 
 namespace raztalk
 {
@@ -27,9 +28,14 @@ namespace raztalk
     {
         public string Folder { get; set; }
 
+        public RemoteLoader()
+        {
+            AppDomain.CurrentDomain.AssemblyResolve += AssemblyResolve;
+        }
+
         public Assembly LoadAssembly(string assemblyPath)
         {
-            return Assembly.LoadFile(assemblyPath);
+            return Assembly.LoadFrom(assemblyPath);
         }
 
         public Assembly AssemblyResolve(object o, ResolveEventArgs e)
@@ -38,11 +44,11 @@ namespace raztalk
 
             FileInfo file = new DirectoryInfo("/").GetFiles().First(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
             if (file != null)
-                return Assembly.LoadFile(file.Name);
+                return Assembly.LoadFile(file.FullName);
 
             file = new DirectoryInfo(Folder).GetFiles().First(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
             if (file != null)
-                return Assembly.LoadFile(Folder + file.Name);
+                return Assembly.LoadFile(file.FullName);
 
             return AppDomain.CurrentDomain.Load(e.Name);
         }
