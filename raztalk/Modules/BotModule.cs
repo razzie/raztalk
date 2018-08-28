@@ -29,9 +29,15 @@ namespace raztalk.Modules
                 return BotManager.Available;
             };
 
-            Get["reload"] = ctx =>
+            Get["load"] = ctx =>
             {
-                BotManager.Reload();
+                BotManager.Load();
+                return BotManager.Available;
+            };
+
+            Get["unload"] = ctx =>
+            {
+                BotManager.Unload();
                 return BotManager.Available;
             };
         }

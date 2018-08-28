@@ -27,7 +27,7 @@ using System.Timers;
 
 namespace raztalk
 {
-    public class Channel : IDisposable
+    public class Channel : MarshalByRefObject, IDisposable
     {
         static private ConcurrentDictionary<string, Channel> m_channels = new ConcurrentDictionary<string, Channel>();
 
@@ -136,7 +136,7 @@ namespace raztalk
                 var newbot = m_botmgr.Add(bot);
                 if (newbot != null)
                 {
-                    newbot.UserData = new BotUser(bot);
+                    newbot.UserData = User.BotUser(bot);
                     newbot.NewMessage += (sender, msg) => Send(sender.UserData as User, msg);
                     Send("Bot added");
                 }

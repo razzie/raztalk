@@ -33,7 +33,7 @@ namespace raztalk
         {
             get
             {
-                return string.Join(", ", Domain.Classes.Keys.ToArray());
+                return string.Join(", ", Domain.Classes.Select(c => c.TypeNme).ToArray());
             }
         }
 
@@ -93,9 +93,14 @@ namespace raztalk
             m_bots.Clear();
         }
 
-        static public void Reload()
+        static public void Load()
         {
-            Domain.Reload();
+            Domain.Load();
+        }
+
+        static public void Unload()
+        {
+            Domain.Unload();
         }
     }
 }

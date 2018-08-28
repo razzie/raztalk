@@ -94,7 +94,7 @@ namespace raztalk.bot
                     if (m_cancel.Token.IsCancellationRequested)
                         break;
 
-                    if ((DateTime.Now - start) > TimeSpan.FromSeconds(5) && (!post.NSFW || m_nsfw))
+                    if ((DateTime.Now - start) > TimeSpan.FromSeconds(10) && (!post.NSFW || m_nsfw))
                         FireNewMessage(post.Title + "\n" + post.Url.AbsoluteUri);
                 }
 
