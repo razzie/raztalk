@@ -24,11 +24,47 @@ using System.Reflection;
 
 namespace raztalk
 {
+    [Serializable]
+    public class RemoteClass
+    {
+        public string AssemblyName { get; private set; }
+        public string Namespace { get; private set; }
+        public string TypeNme { get; private set; }
+
+        public RemoteClass(Type type)
+        {
+            AssemblyName = type.Assembly.GetName().FullName;
+            Namespace = type.Namespace;
+            TypeNme = type.Name;
+        }
+    }
+
     public class RemoteLoader : MarshalByRefObject
     {
         public string Folder { get; set; }
         public AppDomain Domain { get { return AppDomain.CurrentDomain; } }
-        private Dictionary<AssemblyName, Assembly> LoadedAssemblies { get; } = new Dictionary<AssemblyName, Assembly>();
+        private Dictionary<string, Assembly> LoadedAssemblies { get; } = new Dictionary<string, Assembly>();
+
+        public RemoteLoader()
+        {
+            Domain.AssemblyResolve += (sender, args) => LoadAssembly(new AssemblyName(args.Name));
+        }
+
+        public MarshalByRefObject CreateInstance(RemoteClass rclass)
+        {
+            Assembly assembly;
+            if (LoadedAssemblies.TryGetValue(rclass.AssemblyName, out assembly))
+            {
+                return (MarshalByRefObject)assembly.CreateInstance(rclass.Namespace + "." + rclass.TypeNme);
+            }
+            
+            return null;
+        }
+
+        public RemoteClass[] LoadAssemblyClasses(AssemblyName assembly)
+        {
+            return LoadAssembly(assembly).RemoteClasses(typeof(MarshalByRefObject)).ToArray();
+        }
 
         static private FileInfo FindDLL(string dir, AssemblyName assembly)
         {
@@ -43,9 +79,9 @@ namespace raztalk
 
         private Assembly LoadAssembly(AssemblyName assembly)
         {
-            if (LoadedAssemblies.ContainsKey(assembly))
+            if (LoadedAssemblies.ContainsKey(assembly.FullName))
             {
-                return LoadedAssemblies[assembly];
+                return LoadedAssemblies[assembly.FullName];
             }
 
             FileInfo dll = FindDLL(assembly);
@@ -61,27 +97,28 @@ namespace raztalk
         {
             foreach (var dep in assembly.GetReferencedAssemblies())
             {
-                if (!LoadedAssemblies.ContainsKey(dep))
+                if (!LoadedAssemblies.ContainsKey(dep.FullName))
                 {
                     var loaded_dep = LoadAssembly(dep);
-                    LoadedAssemblies.Add(loaded_dep.GetName(), loaded_dep);
                 }
             }
 
-            return assembly;
-        }
+            LoadedAssemblies.Add(assembly.FullName, assembly);
 
-        public string[] LoadAssemblyClasses(AssemblyName assembly)
-        {
-            return LoadAssembly(assembly).Subclasses(typeof(MarshalByRefObject)).ToArray();
+            return assembly;
         }
     }
 
-    static class AssemblyExtensions
+    static class RemoteClassExtensions
     {
-        static public IEnumerable<string> Subclasses(this Assembly assembly, Type basetype)
+        static public IEnumerable<RemoteClass> RemoteClasses(this Assembly assembly, Type basetype)
         {
-            return assembly.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(basetype)).Select(c => c.Name);
+            return assembly.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(basetype)).Select(c => new RemoteClass(c));
         }
+
+        //static public MarshalByRefObject CreateInstance(this AppDomain domain, RemoteClass type)
+        //{
+        //    return (MarshalByRefObject)domain.CreateInstanceAndUnwrap(type.AssemblyName, type.TypeNme);
+        //}
     }
 }

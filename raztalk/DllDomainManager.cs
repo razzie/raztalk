@@ -19,11 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Security;
-using System.Security.Permissions;
-using System.Security.Policy;
 
 namespace raztalk
 {
@@ -37,7 +33,7 @@ namespace raztalk
         private string Folder { get; set; }
         private FileInfo[] DLLs { get { return new DirectoryInfo(Folder).GetFiles("*.dll"); } }
         private Dictionary<string, string> Assemblies { get; } = new Dictionary<string, string>();
-        public Dictionary<string, string> Classes { get; } = new Dictionary<string, string>();
+        public List<RemoteClass> Classes { get; } = new List<RemoteClass>();
 
         public DllDomainManager(string folder)
         {
@@ -47,19 +43,12 @@ namespace raztalk
 
         public MarshalByRefObject Create(string typename)
         {
-            //foreach (var type in Classes)
-            //{
-            //    if (type.Name.Equals(typename))
-            //    {
-            //        string assemblyname = type.Assembly.GetName().Name;
-            //        return (MarshalByRefObject)Domain.CreateInstanceAndUnwrap(assemblyname, typename);
-            //    }
-            //}
-
-            string assembly;
-            if (Classes.TryGetValue(typename, out assembly))
+            foreach (var rclass in Classes)
             {
-                return (MarshalByRefObject)Domain.CreateInstanceAndUnwrap(assembly, typename);
+                if (rclass.TypeNme.Equals(typename))
+                {
+                    return Loader.CreateInstance(rclass);
+                }
             }
 
             return null;
@@ -67,9 +56,10 @@ namespace raztalk
 
         private void CreateDomain()
         {
+            if (Domain != null) return;
+
             var setup = new AppDomainSetup()
             {
-                ApplicationName = "raztalk",
                 //ShadowCopyFiles = "true",
                 //CachePath = AppFolder,
                 //ShadowCopyDirectories = AppFolder,
@@ -77,48 +67,15 @@ namespace raztalk
                 PrivateBinPath = AppFolder
             };
 
-            //var permissions = new PermissionSet(PermissionState.None);
-            //permissions.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.PathDiscovery, AppFolder));
-            //permissions.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
-            //permissions.AddPermission(new ReflectionPermission(PermissionState.Unrestricted));
-
-            //var signed_assemblies = Assembly.GetExecutingAssembly().GetReferencedAssemblies().Where(a => a.GetPublicKeyToken() != null);
-            //StrongName[] trust = signed_assemblies.Select(a => new StrongName(new StrongNamePublicKeyBlob(a.GetPublicKeyToken()), a.Name, a.Version)).ToArray();
-
             Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), AppDomain.CurrentDomain.Evidence, setup, Assembly.GetExecutingAssembly().PermissionSet);
             Loader = (RemoteLoader)Domain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(RemoteLoader).FullName);
             Loader.Folder = Folder;
         }
 
-        private void Load()
+        public void Load()
         {
             CreateDomain();
 
-            foreach (var file in DLLs)
-            {
-                var aname = AssemblyName.GetAssemblyName(file.FullName);
-                foreach (var typename in RemoteLoadAssemblyClasses(Loader, aname))
-                {
-                    Classes.Add(typename, aname.Name);
-                }
-                Assemblies.Add(file.FullName, aname.FullName);
-            }
-        }
-
-        private void Unload()
-        {
-            Unloaded?.Invoke(this, Domain);
-            Unloaded = null;
-
-            AppDomain.Unload(Domain);
-            Domain = null;
-
-            Assemblies.Clear();
-            Classes.Clear();
-        }
-
-        public void Reload()
-        {
             foreach (var file in DLLs)
             {
                 var aname = AssemblyName.GetAssemblyName(file.FullName);
@@ -127,28 +84,36 @@ namespace raztalk
                 {
                     if (!aname.FullName.Equals(cached_aname))
                     {
-                        HardReload();
+                        Unload();
+                        Load();
                         return;
                     }
                 }
                 else
                 {
-                    foreach (var typename in RemoteLoadAssemblyClasses(Loader, aname))
-                    {
-                        Classes.Add(typename, aname.Name);
-                    }
+                    Classes.AddRange(RemoteLoadAssemblyClasses(Loader, aname));
                     Assemblies.Add(file.FullName, aname.FullName);
                 }
             }
         }
 
-        private void HardReload()
+        public void Unload()
         {
-            Unload();
-            Load();
+            if (Domain != null)
+            {
+                Unloaded?.Invoke(this, Domain);
+
+                AppDomain.Unload(Domain);
+                Domain = null;
+            }
+
+            Unloaded = null;
+
+            Assemblies.Clear();
+            Classes.Clear();
         }
 
-        static private string[] RemoteLoadAssemblyClasses(RemoteLoader loader, AssemblyName assembly)
+        static private RemoteClass[] RemoteLoadAssemblyClasses(RemoteLoader loader, AssemblyName assembly)
         {
             return loader.LoadAssemblyClasses(assembly);
         }

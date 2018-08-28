@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 
 namespace raztalk
 {
+    [Serializable]
     public class User
     {
         private User()
@@ -41,18 +42,17 @@ namespace raztalk
             Name = username;
         }
 
-        public virtual string Name { get; private set; }
-
-        static public User System { get; set; } = new User();
-    }
-
-    public class BotUser : User
-    {
-        public BotUser(string username) : base(username)
+        static public User BotUser(string botname)
         {
+            return new User()
+            {
+                Name = "[" + botname + "]"
+            };
         }
 
-        public override string Name { get { return "[" + base.Name + "]"; } }
+        public string Name { get; private set; }
+
+        static public User System { get; set; } = new User();
     }
 
     public static class UsersExtension
