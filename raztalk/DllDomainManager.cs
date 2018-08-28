@@ -21,6 +21,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security;
+using System.Security.Permissions;
+using System.Security.Policy;
 
 namespace raztalk
 {
@@ -28,6 +31,8 @@ namespace raztalk
     {
         public event EventHandler<AppDomain> Unloaded;
 
+        static private string AppFolder { get; } = AppDomain.CurrentDomain.BaseDirectory;
+        static private string CacheFolder { get; } = AppDomain.CurrentDomain.BaseDirectory + "cache/";
         private AppDomain Domain { get; set; }
         private RemoteLoader Loader { get; set; }
         private string Folder { get; set; }
@@ -57,15 +62,26 @@ namespace raztalk
 
         private void CreateDomain()
         {
-            var setup = new AppDomainSetup();
-            setup.ApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
-            setup.PrivateBinPath = AppDomain.CurrentDomain.BaseDirectory;
+            var setup = new AppDomainSetup()
+            {
+                ApplicationName = "raztalk",
+                //ShadowCopyFiles = "true",
+                //CachePath = CacheFolder,
+                //ShadowCopyDirectories = CacheFolder,
+                ApplicationBase = AppFolder,
+                PrivateBinPath = AppFolder
+            };
 
-            Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), null, setup);
+            var permissions = new PermissionSet(PermissionState.None);
+            permissions.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.PathDiscovery, AppFolder));
+            //permissions.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.Write | FileIOPermissionAccess.PathDiscovery, CacheFolder));
+            permissions.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution | SecurityPermissionFlag.ControlAppDomain));
+
+            StrongName[] trust = new StrongName[0];
+
+            Domain = AppDomain.CreateDomain(Guid.NewGuid().ToString(), AppDomain.CurrentDomain.Evidence, setup, permissions, trust);
             Loader = (RemoteLoader)Domain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(RemoteLoader).FullName);
             Loader.Folder = Folder;
-
-            Domain.AssemblyResolve += Loader.AssemblyResolve;
         }
 
         private void Load()
@@ -76,7 +92,7 @@ namespace raztalk
             foreach (var file in DLLs)
             {
                 var aname = AssemblyName.GetAssemblyName(file.FullName);
-                var dll = RemoteLoadDLL(Loader, file.FullName); //Domain.Load(aname);
+                var dll = RemoteLoadDLL(Loader, file.FullName);
                 Assemblies.Add(file.FullName, aname.FullName);
                 classes.AddRange(dll.Subclasses(typeof(MarshalByRefObject)));
             }
@@ -113,7 +129,7 @@ namespace raztalk
                 }
                 else
                 {
-                    var dll = RemoteLoadDLL(Loader, file.FullName); //Domain.Load(aname);
+                    var dll = RemoteLoadDLL(Loader, file.FullName);
                     Assemblies.Add(file.FullName, aname.FullName);
                     classes.AddRange(dll.Subclasses(typeof(MarshalByRefObject)));
                 }
