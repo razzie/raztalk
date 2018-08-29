@@ -74,7 +74,7 @@ namespace raztalk
 
         private FileInfo FindDLL(AssemblyName assembly)
         {
-            return FindDLL(Domain.BaseDirectory, assembly) ?? FindDLL(Domain.BaseDirectory + Folder, assembly);
+            return FindDLL(Domain.BaseDirectory + Folder, assembly) ?? FindDLL(Domain.BaseDirectory, assembly);
         }
 
         private Assembly LoadAssembly(AssemblyName assembly)
@@ -103,7 +103,10 @@ namespace raztalk
                 }
             }
 
-            LoadedAssemblies.Add(assembly.FullName, assembly);
+            if (!LoadedAssemblies.ContainsKey(assembly.FullName))
+            {
+                LoadedAssemblies.Add(assembly.FullName, assembly);
+            }
 
             return assembly;
         }
@@ -115,10 +118,5 @@ namespace raztalk
         {
             return assembly.GetExportedTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(basetype)).Select(c => new RemoteClass(c));
         }
-
-        //static public MarshalByRefObject CreateInstance(this AppDomain domain, RemoteClass type)
-        //{
-        //    return (MarshalByRefObject)domain.CreateInstanceAndUnwrap(type.AssemblyName, type.TypeNme);
-        //}
     }
 }

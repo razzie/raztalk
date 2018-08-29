@@ -98,7 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotManager.cs" />
-    <Compile Include="DllDomainManager.cs" />
+    <Compile Include="SandboxDomain.cs" />
     <Compile Include="CommandParser.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="CustomBootstrapper.cs" />

@@ -23,7 +23,7 @@ using System.Reflection;
 
 namespace raztalk
 {
-    public class DllDomainManager
+    public class SandboxDomain
     {
         public event EventHandler<AppDomain> Unloaded;
 
@@ -35,7 +35,7 @@ namespace raztalk
         private Dictionary<string, string> Assemblies { get; } = new Dictionary<string, string>();
         public List<RemoteClass> Classes { get; } = new List<RemoteClass>();
 
-        public DllDomainManager(string folder)
+        public SandboxDomain(string folder)
         {
             Folder = folder;
             CreateDomain();
