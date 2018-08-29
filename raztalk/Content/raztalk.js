@@ -58,6 +58,11 @@
     });
 
     channel.client.send = function (user, message, timestamp) {
+        if ((timestamp - lastMsgTimestamp) > 60000) {
+            var spacing = "<tr><td colspan=\"2\">&nbsp;</td></tr>";
+            $("#messages tr:last").after(spacing);
+        }
+
         if ((timestamp - lastMsgTimestamp) > 600000) {
             lastMsgUser = "";
             var ts = new Date(timestamp)
