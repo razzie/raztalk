@@ -25,7 +25,7 @@ namespace raztalk
 {
     public class BotManager : IDisposable
     {
-        static private DllDomainManager Domain { get; } = new DllDomainManager("bots/");
+        static private SandboxDomain Domain { get; } = new SandboxDomain("bots/");
 
         private ConcurrentDictionary<string, Bot> m_bots = new ConcurrentDictionary<string, Bot>();
 
