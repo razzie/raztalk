@@ -58,16 +58,18 @@
     });
 
     channel.client.send = function (user, message, timestamp) {
-        if ((timestamp - lastMsgTimestamp) > 60000) {
-            var spacing = "<tr><td colspan=\"2\">&nbsp;</td></tr>";
-            $("#messages tr:last").after(spacing);
-        }
+        var elapsedMs = timestamp - lastMsgTimestamp;
 
-        if ((timestamp - lastMsgTimestamp) > 600000) {
-            lastMsgUser = "";
-            var ts = new Date(timestamp)
-            var separator = "<tr><td colspan=\"2\" class=\"text-right\"><small>" + ts.razformat() + "</small><hr /></td></tr>";
-            $("#messages tr:last").after(separator);
+        if (elapsedMs > 60000) {
+            if (elapsedMs > 600000) { // timestamp bar after 10 mins
+                lastMsgUser = "";
+                var ts = new Date(timestamp)
+                var separator = "<tr><td colspan=\"2\" class=\"text-right\"><small>" + ts.razformat() + "</small><hr /></td></tr>";
+                $("#messages tr:last").after(separator);
+            } else { // spacing after 1 min (but less than 10)
+                var spacing = "<tr><td colspan=\"2\">&nbsp;</td></tr>";
+                $("#messages tr:last").after(spacing);
+            }
         }
 
         var row;
