@@ -159,6 +159,15 @@ namespace raztalk
                     Send("Done");
                 }
             });
+
+            m_cmdparser.Add<string, string>("!bot {0} {1}?", (bot, arg) =>
+            {
+                Bot tmp_bot = m_botmgr.Get(bot);
+                if (tmp_bot != null)
+                {
+                    Send(tmp_bot[arg]);
+                }
+            });
         }
 
         private bool Login(User user, string password)

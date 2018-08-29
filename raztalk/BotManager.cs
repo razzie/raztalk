@@ -20,6 +20,7 @@ using raztalk.bot;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Runtime.Remoting;
 
 namespace raztalk
 {
@@ -78,9 +79,17 @@ namespace raztalk
 
         public void ConsumeMessage(Message message)
         {
-            foreach (var bot in m_bots.Values)
+            foreach (var bot in m_bots.ToArray())
             {
-                bot.ConsumeMessage(message.User.Name, message.Text, message.Timestamp);
+                try
+                {
+                    bot.Value.ConsumeMessage(message.User.Name, message.Text, message.Timestamp);
+                }
+                catch (RemotingException)
+                {
+                    Bot tmp_bot;
+                    m_bots.TryRemove(bot.Key, out tmp_bot);
+                }
             }
         }
 
@@ -88,7 +97,13 @@ namespace raztalk
         {
             foreach (var bot in m_bots.Values)
             {
-                bot.Dispose();
+                try
+                {
+                    bot.Dispose();
+                }
+                catch (RemotingException)
+                {
+                }
             }
             m_bots.Clear();
         }

@@ -33,7 +33,6 @@ namespace raztalk.bot
         static private string RedirectUri { get; set; }
 
         private Reddit m_reddit;
-        private Subreddit m_subreddit;
         private CancellationTokenSource m_cancel;
         private bool m_nsfw = false;
 
@@ -63,8 +62,7 @@ namespace raztalk.bot
             switch (arg)
             {
                 case "r":
-                    m_subreddit = m_reddit.GetSubreddit(value);
-                    RunBot();
+                    RunBot(value);
                     break;
 
                 case "nsfw":
@@ -76,7 +74,7 @@ namespace raztalk.bot
             }
         }
 
-        private void RunBot()
+        private void RunBot(string subreddit)
         {
             if (m_cancel != null)
             {
@@ -84,23 +82,40 @@ namespace raztalk.bot
                 m_cancel = null;
             }
 
+            if (string.IsNullOrEmpty(subreddit)) return;
+
             m_cancel = new CancellationTokenSource();
             Task.Factory.StartNew(() =>
             {
                 var start = DateTime.Now;
-                var posts = m_subreddit.New.GetListingStream();
-                foreach (var post in posts)
+                var cancel = m_cancel;
+                try
                 {
-                    if (m_cancel.Token.IsCancellationRequested)
-                        break;
+                    var posts = m_reddit.GetSubreddit(subreddit).New.GetListingStream();
+                    foreach (var post in posts)
+                    {
+                        cancel.Token.ThrowIfCancellationRequested();
 
-                    if ((DateTime.Now - start) > TimeSpan.FromSeconds(10) && (!post.NSFW || m_nsfw))
-                        FireNewMessage(post.Title + "\n" + post.Url.AbsoluteUri);
+                        if ((DateTime.Now - start) > TimeSpan.FromSeconds(10) && (!post.NSFW || m_nsfw))
+                            FireNewMessage(post.Title + "\n" + post.Url.AbsoluteUri);
+                    }
                 }
-
-                FireNewMessage("END");
-
-            }, m_cancel.Token);
+                catch (OperationCanceledException)
+                {
+                    FireNewMessage("Thread canceled");
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    for (; e.InnerException != null; e = e.InnerException) ;
+                    FireNewMessage(e.Message);
+                }
+                finally
+                {
+                    FireNewMessage("Thread ended");
+                    cancel.Dispose();
+                }
+            });
         }
 
         public override void Dispose()
