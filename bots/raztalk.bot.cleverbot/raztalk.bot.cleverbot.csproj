@@ -56,5 +56,11 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\raztalk.bot\raztalk.bot.csproj">
+      <Project>{198ddfc4-e460-4f11-b63b-c2302d47916b}</Project>
+      <Name>raztalk.bot</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
