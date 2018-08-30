@@ -18,6 +18,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace raztalk.bot
 {
@@ -43,7 +44,12 @@ namespace raztalk.bot
             }
         }
 
-        public virtual void ConsumeMessage(string user, string message, DateTime timestamp)
+        public void ConsumeMessageAsync(string user, string message, DateTime timestamp)
+        {
+            Task.Factory.StartNew(() => ConsumeMessage(user, message, timestamp));
+        }
+
+        protected virtual void ConsumeMessage(string user, string message, DateTime timestamp)
         {
         }
 

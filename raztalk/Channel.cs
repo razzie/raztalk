@@ -103,8 +103,8 @@ namespace raztalk
             
             if (text.StartsWith("!"))
                 m_cmdparser.Exec(text);
-
-            m_botmgr.ConsumeMessage(message);
+            else
+                m_botmgr.ConsumeMessage(message);
         }
 
         private void InitCommands()
