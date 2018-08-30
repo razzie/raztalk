@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\raztalk\bin\Debug\bots\</OutputPath>
+    <OutputPath>..\..\raztalk\bin\Debug\bots\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\raztalk\bin\Release\bots\</OutputPath>
+    <OutputPath>..\..\raztalk\bin\Release\bots\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -53,7 +53,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\raztalk.bot\raztalk.bot.csproj">
+    <ProjectReference Include="..\..\raztalk.bot\raztalk.bot.csproj">
       <Project>{198ddfc4-e460-4f11-b63b-c2302d47916b}</Project>
       <Name>raztalk.bot</Name>
     </ProjectReference>
