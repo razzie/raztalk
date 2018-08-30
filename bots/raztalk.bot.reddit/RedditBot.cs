@@ -17,7 +17,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using RedditSharp;
-using RedditSharp.Things;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +25,7 @@ namespace raztalk.bot
 {
     public class RedditBot : Bot
     {
-        static private string Username { get; set; }
-        static private string Password { get; set; }
-        static private string ClientID { get; set; }
-        static private string ClientSecret { get; set; }
-        static private string RedirectUri { get; set; }
-
-        private Reddit m_reddit;
+        static private Reddit m_reddit;
         private CancellationTokenSource m_cancel;
         private bool m_nsfw = false;
 
@@ -41,20 +34,19 @@ namespace raztalk.bot
             var parser = new IniParser.FileIniDataParser();
             var ini = parser.ReadFile("bots/redditbot.ini");
 
-            Username = ini.Global["USERNAME"];
-            Password = ini.Global["PASSWORD"];
-            ClientID = ini.Global["CLIENT_ID"];
-            ClientSecret = ini.Global["CLIENT_SECRET"];
-            RedirectUri = ini.Global["REDIRECT_URI"];
+            var username = ini.Global["USERNAME"];
+            var password = ini.Global["PASSWORD"];
+            var clientID = ini.Global["CLIENT_ID"];
+            var clientSecret = ini.Global["CLIENT_SECRET"];
+            var redirectUri = ini.Global["REDIRECT_URI"];
+
+            var webagent = new BotWebAgent(username, password, clientID, clientSecret, redirectUri);
+            m_reddit = new Reddit(webagent, true);
         }
 
         public RedditBot()
         {
             ArgChanged += (bot, arg, value) => Configure(arg, value);
-
-            var webagent = new BotWebAgent(Username, Password, ClientID, ClientSecret, RedirectUri);
-            m_reddit = new Reddit(webagent, true);
-            m_cancel = null;
         }
 
         private void Configure(string arg, string value)
