@@ -12,10 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.client", "raztalk.c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot", "raztalk.bot\raztalk.bot.csproj", "{198DDFC4-E460-4F11-B63B-C2302D47916B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.reddit", "raztalk.bot.reddit\raztalk.bot.reddit.csproj", "{81424503-072C-4292-A1AC-81E2EEE77D17}"
-	ProjectSection(ProjectDependencies) = postProject
-		{198DDFC4-E460-4F11-B63B-C2302D47916B} = {198DDFC4-E460-4F11-B63B-C2302D47916B}
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.reddit", "bots\raztalk.bot.reddit\raztalk.bot.reddit.csproj", "{81424503-072C-4292-A1AC-81E2EEE77D17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
