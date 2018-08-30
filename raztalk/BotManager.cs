@@ -81,9 +81,11 @@ namespace raztalk
         {
             foreach (var bot in m_bots.ToArray())
             {
+                if (message.User.IsBot || message.SystemMessage) continue;
+
                 try
                 {
-                    bot.Value.ConsumeMessage(message.User.Name, message.Text, message.Timestamp);
+                    bot.Value.ConsumeMessageAsync(message.User.Name, message.Text, message.Timestamp);
                 }
                 catch (RemotingException)
                 {

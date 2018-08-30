@@ -46,11 +46,13 @@ namespace raztalk
         {
             return new User()
             {
-                Name = "[" + botname + "]"
+                Name = "[" + botname + "]",
+                IsBot = true
             };
         }
 
         public string Name { get; private set; }
+        public bool IsBot { get; private set; }
 
         static public User System { get; set; } = new User();
     }
