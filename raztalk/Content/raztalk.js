@@ -6,6 +6,7 @@
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
     var lastMsgTimestamp = 0;
+    var firstMsgSent = false;
 
     String.prototype.trim = function () {
         return this.replace(/^\s+|\s+$/g, "");
@@ -32,7 +33,7 @@
     function formatUser(user) {
         if (user == lastMsgUser) {
             return "";
-        } else if (user == username) {
+        } else if (user == username && firstMsgSent) {
             return "<strong>" + user + "</strong>";
         } else {
            return user;
@@ -132,6 +133,7 @@
                 msg = $(this);
                 if (msg.val().length > 0) {
                     channel.server.send(msg.val().trim());
+                    firstMsgSent = true;
                 }
                 msg.val("");
                 msg.focus();
