@@ -125,6 +125,20 @@ namespace raztalk
                 Send(string.Format("Keep alive timeout for this channel is {0} hour(s)", h));
             });
 
+            m_cmdparser.Add<string, uint>("!invite {0} {0}m", (user, keepalive) =>
+            {
+                var connection = Connection.Open(user, Name, Password, TimeSpan.FromMinutes(keepalive));
+                if (connection != null)
+                    Send(user + " invited (<a href=\"/view-channel/" + connection.Token + "\">copy this link</a>)");
+            });
+
+            m_cmdparser.Add<string, uint>("!invite {0} {0}h", (user, keepalive) =>
+            {
+                var connection = Connection.Open(user, Name, Password, TimeSpan.FromHours(keepalive));
+                if (connection != null)
+                    Send(user + " invited (<a href=\"/view-channel/" + connection.Token + "\">copy this link</a>)");
+            });
+
             m_cmdparser.Add("!bots", () =>
             {
                 Send("Bots available: " + BotManager.Available);
