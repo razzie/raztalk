@@ -24,10 +24,17 @@
     function fileExtension(url) {
         return (url = url.substr(1 + url.lastIndexOf("/")).split('?')[0]).split('#')[0].substr(url.lastIndexOf(".")).toLowerCase();
     }
-    function isImage(url) {
-        var image_types = [".jpg", ".jpeg", ".png", ".gif"];
-        var ext = fileExtension(url);
+    function isImage(ext) {
+        var image_types = [".jpg", ".jpeg", ".png", ".gif", ".gifv"];
         return (image_types.indexOf(ext) != -1);
+    }
+    function isAudio(ext) {
+        var audio_types = [".mp3", ".ogg"];
+        return (audio_types.indexOf(ext) != -1);
+    }
+    function isVideo(ext) {
+        var media_types = [".mp4", ".webm"];
+        return (media_types.indexOf(ext) != -1);
     }
 
     function formatUser(user) {
@@ -88,8 +95,16 @@
         links.oembed();
         links.each(function () {
             var url = $(this).attr("href");
-            if (isImage(url)) {
-                $(this).html("<img src=\"" + url + "\" />");
+            var ext = fileExtension(url);
+
+            if (isImage(ext)) {
+                $(this).html(url + "<br /><img src=\"" + url + "\" />");
+            }
+            else if (isAudio(ext)) {
+                $(this).html(url + "<br /><audio controls><source src=\"" + url + "\" /></audio>");
+            }
+            else if (isVideo(ext)) {
+                $(this).html(url + "<br /><video controls><source src=\"" + url + "\" /></video>");
             }
         });
 

@@ -62,8 +62,8 @@ a {
     text-decoration-color: rgb(220, 53, 69);
 }
 
-img {
-    max-width: 50vw;
+img, audio, video {
+    max-width: 100%;
     max-height: 50vh;
     width: auto;
     height: auto;
