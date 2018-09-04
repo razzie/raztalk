@@ -47,7 +47,7 @@ namespace raztalk.Modules
                 connection.Close();
             }
 
-            connection = Connection.Open(username, channelname, channelpw);
+            connection = Connection.Login(username, channelname, channelpw);
             var joined = Join(connection.Token);
 
             if (joined)
