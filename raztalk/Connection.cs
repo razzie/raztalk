@@ -115,7 +115,7 @@ namespace raztalk
             throw new NotImplementedException();
         }
 
-        static public Connection Open(string username, string channelname, string channelpw)
+        static public Connection Login(string username, string channelname, string channelpw)
         {
             var user = new User(username);
             var channel = Channel.Login(user, channelname, channelpw);
@@ -123,10 +123,10 @@ namespace raztalk
             return new Connection(user, channel, channelpw);
         }
 
-        static public Connection Open(string username, string channelname, string channelpw, TimeSpan keepalive)
+        static public Connection Invite(string username, string channelname, string channelpw, TimeSpan keepalive)
         {
             var user = new User(username);
-            var channel = Channel.Login(user, channelname, channelpw);
+            var channel = Channel.Invite(user, channelname, channelpw);
 
             return new Connection(user, channel, channelpw, keepalive);
         }
@@ -160,6 +160,7 @@ namespace raztalk
                 connection.State = ConnectionState.Estabilished;
                 connection.SendInfo(connection.User.Name + " joined");
                 connection.ConnectionId = connectionId;
+                connection.User.ConnectionId = connectionId;
                 return connection;
             }
 

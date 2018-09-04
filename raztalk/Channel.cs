@@ -78,7 +78,8 @@ namespace raztalk
         public IEnumerable<User> Users { get { return m_users; } }
         public IEnumerable<Message> Messages { get { return m_messages; } }
         public uint MaxHistory { get; private set; } = 100;
-        public TimeSpan KeepAliveTimeout { get; set; } = TimeSpan.FromMinutes(5);
+        public TimeSpan KeepAliveTimeout { get; private set; } = TimeSpan.FromMinutes(5);
+        public bool InviteOnly { get; private set; }
 
         public void Send(string text)
         {
@@ -127,16 +128,22 @@ namespace raztalk
 
             m_cmdparser.Add<string, uint>("!invite {0} {0}m", (user, keepalive) =>
             {
-                var connection = Connection.Open(user, Name, Password, TimeSpan.FromMinutes(keepalive));
+                var connection = Connection.Invite(user, Name, Password, TimeSpan.FromMinutes(keepalive));
                 if (connection != null)
                     Send(user + " invited (<a href=\"/view-channel/" + connection.Token + "\">copy this link</a>)");
             });
 
             m_cmdparser.Add<string, uint>("!invite {0} {0}h", (user, keepalive) =>
             {
-                var connection = Connection.Open(user, Name, Password, TimeSpan.FromHours(keepalive));
+                var connection = Connection.Invite(user, Name, Password, TimeSpan.FromHours(keepalive));
                 if (connection != null)
                     Send(user + " invited (<a href=\"/view-channel/" + connection.Token + "\">copy this link</a>)");
+            });
+
+            m_cmdparser.Add<bool>("!invite-only {0}", enabled =>
+            {
+                InviteOnly = enabled;
+                Send("Invite only mode " + (enabled ? "enabled" : "disabled"));
             });
 
             m_cmdparser.Add("!bots", () =>
@@ -238,10 +245,10 @@ namespace raztalk
             m_botmgr.Dispose();
         }
 
-        static public Channel Login(User user, string channelname, string channelpw)
+        static private Channel DoLogin(User user, string channelname, string channelpw, bool invited)
         {
             if (string.IsNullOrEmpty(channelname) || !Regex.IsMatch(channelname, "^[a-zA-Z0-9_.-]*$"))
-                throw new Exception("Invalid username!");
+                throw new Exception("Invalid channel name!");
 
             if (channelname.Length > 64)
                 throw new Exception("Channel name too long");
@@ -252,15 +259,35 @@ namespace raztalk
             Channel channel;
             if (m_channels.TryGetValue(channelname.ToLower(), out channel))
             {
-                if (channel.Login(user, channelpw))
-                    return channel;
-                else
-                    throw new Exception("Authentication to channel failed!");
+                try
+                {
+                    if (channel.InviteOnly && !invited)
+                        throw new Exception("This channel is invite only!");
+                    else if (channel.Login(user, channelpw))
+                        return channel;
+                    else
+                        throw new Exception("Authentication to channel failed!");
+                }
+                catch (Exception e)
+                {
+                    channel.Send(user.Name + " failed to login with exception: " + e.Message);
+                    throw e;
+                }
             }
             else
             {
                 return new Channel(channelname, channelpw, user);
             }
+        }
+
+        static public Channel Login(User user, string channelname, string channelpw)
+        {
+            return DoLogin(user, channelname, channelpw, false);
+        }
+
+        static public Channel Invite(User user, string channelname, string channelpw)
+        {
+            return DoLogin(user, channelname, channelpw, true);
         }
     }
 }

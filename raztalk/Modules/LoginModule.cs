@@ -72,7 +72,7 @@ namespace raztalk.Modules
                 try
                 {
                     var data = this.Bind<LoginData>();
-                    var connection = Connection.Open(data.User, data.Channel, data.PasswordMD5);
+                    var connection = Connection.Login(data.User, data.Channel, data.PasswordMD5);
                     return Response.AsRedirect("/view-channel/" + connection.Token);
                 }
                 catch (Exception e)
