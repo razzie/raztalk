@@ -60,7 +60,7 @@
     channel.client.send = function (user, message, timestamp) {
         var elapsedMs = timestamp - lastMsgTimestamp;
 
-        if (elapsedMs > 60000) {
+        if (elapsedMs > 120000) {
             if (elapsedMs > 600000) { // timestamp bar after 10 mins
                 lastMsgUser = "";
                 var ts = new Date(timestamp)
