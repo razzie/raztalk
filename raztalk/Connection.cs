@@ -19,7 +19,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using System;
 using System.Collections.Concurrent;
 using System.Security.Principal;
-using System.Timers;
 
 namespace raztalk
 {
@@ -28,6 +27,14 @@ namespace raztalk
         public string Name { get; set; }
         public string AuthenticationType { get; set; }
         public bool IsAuthenticated { get; set; }
+    }
+
+    public enum ConnectionState
+    {
+        AccessGranted,
+        Connecting,
+        Estabilished,
+        Closed
     }
 
     public class Connection : IPrincipal
@@ -41,22 +48,26 @@ namespace raztalk
         public Channel Channel { get; private set; }
         public string Password { get; private set; }
         public string Token { get; private set; }
+        public ConnectionState State { get; private set; }
         private string ConnectionId { get; set; }
 
-        private Connection(User user, Channel channel, string password)
+        private Connection(User user, Channel channel, string password, TimeSpan keepalive)
         {
             User = user;
             Channel = channel;
             Password = password;
             Token = Guid.NewGuid().ToString();
+            State = ConnectionState.AccessGranted;
 
             if (!m_connections.TryAdd(Token, this))
                 throw new Exception("Internal connection error");
 
             m_timeout.Expired += (o, e) => Close();
-            m_timeout.Start(KeepAliveTimeout);
+            m_timeout.Start(keepalive);
+        }
 
-            SendInfo(User.Name + " is connecting...");
+        private Connection(User user, Channel channel, string password) : this(user, channel, password, KeepAliveTimeout)
+        {
         }
 
         ~Connection()
@@ -79,7 +90,9 @@ namespace raztalk
             if (Channel != null)
             {
                 Channel.Logout(User);
-                SendInfo(User.Name + " left");
+
+                if (State != ConnectionState.AccessGranted)
+                    SendInfo(User.Name + " left");
             }
 
             Connection tmp_connection;
@@ -89,6 +102,7 @@ namespace raztalk
             Channel = null;
             Password = null;
             Token = string.Empty;
+            State = ConnectionState.Closed;
         }
 
         public IIdentity Identity
@@ -109,13 +123,28 @@ namespace raztalk
             return new Connection(user, channel, channelpw);
         }
 
+        static public Connection Open(string username, string channelname, string channelpw, TimeSpan keepalive)
+        {
+            var user = new User(username);
+            var channel = Channel.Login(user, channelname, channelpw);
+
+            return new Connection(user, channel, channelpw, keepalive);
+        }
+
         static public Connection Get(string token)
         {
             if (token == null)
                 return null;
 
             Connection connection = null;
-            m_connections.TryGetValue(token, out connection);
+            if (m_connections.TryGetValue(token, out connection))
+            {
+                if (connection.State == ConnectionState.AccessGranted)
+                {
+                    connection.State = ConnectionState.Connecting;
+                    connection.SendInfo(connection.User.Name + " is connecting...");
+                }
+            }
             return connection;
         }
 
@@ -128,6 +157,7 @@ namespace raztalk
             if (m_connections.TryGetValue(token, out connection))
             {
                 connection.m_timeout.Stop();
+                connection.State = ConnectionState.Estabilished;
                 connection.SendInfo(connection.User.Name + " joined");
                 connection.ConnectionId = connectionId;
                 return connection;
@@ -142,8 +172,9 @@ namespace raztalk
             {
                 if (conn.Value.ConnectionId != null && conn.Value.ConnectionId.Equals(connectionId))
                 {
-                    Connection tmp_connection;
+                    Connection tmp_connection = null;
                     m_connections.TryRemove(conn.Key, out tmp_connection);
+                    tmp_connection?.Close();
                     return;
                 }
             }
