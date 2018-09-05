@@ -40,10 +40,27 @@ namespace raztalk.bot
 
         public GiphyBot()
         {
-            m_timer = new Timer(TimeSpan.FromMinutes(2).TotalMilliseconds);
+            ArgChanged += GiphyBot_ArgChanged;
+
+            m_timer = new Timer();
+            m_timer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
             m_timer.Elapsed += TimerElapsed;
             m_timer.AutoReset = true;
-            m_timer.Enabled = true;
+        }
+
+        private void GiphyBot_ArgChanged(Bot bot, string arg, string value)
+        {
+            switch (arg)
+            {
+                case "tranding":
+                    m_timer.Enabled = bool.Parse(value);
+                    break;
+
+                case "interval":
+                    int interval = int.Parse(value);
+                    m_timer.Interval = TimeSpan.FromMinutes(interval).TotalMilliseconds;
+                    break;
+            }
         }
 
         private void TimerElapsed(object sender, ElapsedEventArgs e)
@@ -52,7 +69,10 @@ namespace raztalk.bot
             {
                 Limit = 1
             };
-            m_giphy.TrendingGifs(trending).ContinueWith(task => FireNewMessage(task.Result.Data[0].ContentUrl));
+            m_giphy.TrendingGifs(trending).ContinueWith(task => {
+                var results = task.Result.Data;
+                FireNewMessage(results[0].Images.Original.Url);
+            });
         }
 
         protected override void ConsumeMessage(string user, string message, DateTime timestamp)
