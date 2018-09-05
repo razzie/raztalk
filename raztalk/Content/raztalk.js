@@ -123,7 +123,7 @@
 
     channel.client.send = function (user, message, timestamp) {
         if (timestamp < lastMsgTimestamp) return;
-        if (timestamp == lastMsgTimestamp && message == lastMsg) return;
+        if (timestamp == lastMsgTimestamp && message == lastMsg && user == lastMsgUser) return;
         displayMsg(user, message, timestamp);
     };
     channel.client.updateUsers = function (users) {
