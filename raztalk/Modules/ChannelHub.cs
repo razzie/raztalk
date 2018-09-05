@@ -86,11 +86,10 @@ namespace raztalk.Modules
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            Connection.Close(Context.ConnectionId);
-
             Connection connection;
             if (m_connections.TryRemove(Context.ConnectionId, out connection))
             {
+                Groups.Remove(Context.ConnectionId, connection.Channel.Name);
                 connection.Close();
             }
 
