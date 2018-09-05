@@ -85,6 +85,21 @@ namespace raztalk
             Channel.Send(text);
         }
 
+        public bool Join(string connectionId)
+        {
+            if (State == ConnectionState.Connecting)
+            {
+                m_timeout.Stop();
+                State = ConnectionState.Estabilished;
+                SendInfo(User.Name + " joined");
+                ConnectionId = connectionId;
+                User.ConnectionId = connectionId;
+                return true;
+            }
+
+            return false;
+        }
+
         public void Close()
         {
             if (Channel != null)
@@ -145,29 +160,14 @@ namespace raztalk
                     connection.SendInfo(connection.User.Name + " is connecting...");
                     return connection;
                 }
+                else if (connection.State == ConnectionState.Connecting)
+                {
+                    return connection;
+                }
                 else
                 {
                     connection.SendInfo("Someone is using already existing access token for user: " + connection.User.Name);
                 }
-            }
-
-            return null;
-        }
-
-        static public Connection Join(string connectionId, string token)
-        {
-            if (token == null)
-                return null;
-
-            Connection connection;
-            if (m_connections.TryGetValue(token, out connection) && connection.State == ConnectionState.Connecting)
-            {
-                connection.m_timeout.Stop();
-                connection.State = ConnectionState.Estabilished;
-                connection.SendInfo(connection.User.Name + " joined");
-                connection.ConnectionId = connectionId;
-                connection.User.ConnectionId = connectionId;
-                return connection;
             }
 
             return null;

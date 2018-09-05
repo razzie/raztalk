@@ -46,28 +46,8 @@
            return user;
         }
     }
-    function errorMsg(err) {
-        channel.client.send("", err, lastMsgTimestamp)
-    }
-
-    function reconnect() {
-        $.connection.hub.start().done(function () {
-            channel.client.requestLogin();
-        });
-    }
-
-    $(window).focus(function (event) {
-        isActive = true;
-        unread = 0;
-        document.title = "RazTalk - " + channelname;
-    });
-    $(window).blur(function (event) {
-        isActive = false;
-    });
-
-    channel.client.send = function (user, message, timestamp) {
+    function displayMsg(user, message, timestamp) {
         var elapsedMs = timestamp - lastMsgTimestamp;
-
         if (elapsedMs > 120000) {
             if (elapsedMs > 600000) { // timestamp bar after 10 mins
                 lastMsgUser = "";
@@ -119,6 +99,29 @@
 
         lastMsgUser = user;
         lastMsgTimestamp = timestamp;
+    }
+    function errorMsg(err) {
+        displayMsg("", err, lastMsgTimestamp)
+    }
+
+    function reconnect() {
+        $.connection.hub.start().done(function () {
+            channel.client.requestLogin();
+        });
+    }
+
+    $(window).focus(function (event) {
+        isActive = true;
+        unread = 0;
+        document.title = "RazTalk - " + channelname;
+    });
+    $(window).blur(function (event) {
+        isActive = false;
+    });
+
+    channel.client.send = function (user, message, timestamp) {
+        if (timestamp <= lastMsgTimestamp) return;
+        displayMsg(user, message, timestamp);
     };
     channel.client.updateUsers = function (users) {
         $("#users").text("Connected users: " + users);
