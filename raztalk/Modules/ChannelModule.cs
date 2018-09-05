@@ -18,7 +18,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using Nancy;
 using Nancy.Security;
-using System.Dynamic;
 
 namespace raztalk.Modules
 {
