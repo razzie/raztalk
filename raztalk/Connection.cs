@@ -172,19 +172,5 @@ namespace raztalk
 
             return null;
         }
-
-        static public void Close(string connectionId)
-        {
-            foreach (var conn in m_connections)
-            {
-                if (conn.Value.ConnectionId != null && conn.Value.ConnectionId.Equals(connectionId))
-                {
-                    Connection tmp_connection = null;
-                    m_connections.TryRemove(conn.Key, out tmp_connection);
-                    tmp_connection?.Close();
-                    return;
-                }
-            }
-        }
     }
 }
