@@ -63,7 +63,7 @@
 
         var row;
         if (user == "") {
-            row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\">" + message + "</td></tr>";
+            row = "<tr class=\"info reveal\"><td></td><td data-timestamp=\"" + timestamp + "\"><pre>" + message + "</pre></td></tr>";
         } else {
             row = "<tr class=\"reveal\"><td>" + formatUser(user) + "</td><td data-timestamp=\"" + timestamp + "\"><pre>" + message + "</pre></td></tr>";
         }

@@ -19,6 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace raztalk
@@ -57,6 +58,11 @@ namespace raztalk
         public void Add(string template, Delegate method)
         {
             m_commands.Add(template, method);
+        }
+
+        public string[] Commands
+        {
+            get { return m_commands.Keys.ToArray(); }
         }
 
         public void Exec(string cmdline)

@@ -112,6 +112,8 @@ namespace raztalk
         {
             m_cmdparser.Exceptions += (o, e) => Send(e.Message);
 
+            m_cmdparser.Add("!help", () => Send(string.Join("\n", m_cmdparser.Commands)));
+
             m_cmdparser.Add("!ping", () => Send("pong!"));
 
             m_cmdparser.Add("!users", () => Send("Current users: " + Users.AsString()));
