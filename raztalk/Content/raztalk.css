@@ -63,7 +63,7 @@ a {
 }
 
 img, audio, video {
-    max-width: 100%;
+    max-width: 50vw;
     max-height: 50vh;
     width: auto;
     height: auto;
