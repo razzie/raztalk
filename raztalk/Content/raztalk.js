@@ -55,7 +55,7 @@
                 var ts = new Date(timestamp)
                 var separator = "<tr><td colspan=\"2\" class=\"text-right\"><small>" + ts.razformat() + "</small><hr /></td></tr>";
                 $("#messages tr:last").after(separator);
-            } else { // spacing after 1 min (but less than 10)
+            } else { // spacing after 2 mins (but less than 10)
                 var spacing = "<tr><td colspan=\"2\">&nbsp;</td></tr>";
                 $("#messages tr:last").after(spacing);
             }
@@ -90,7 +90,9 @@
         });
 
         sr.reveal('.reveal');
-        $("html, body").scrollTop($(document).height());
+        msg.find("img, video, audio").on("load", function () {
+            $("html, body").scrollTop($(document).height());
+        });
 
         if (!isActive) {
             unread += 1;
