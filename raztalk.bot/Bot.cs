@@ -39,7 +39,11 @@ namespace raztalk.bot
             get { return m_args[arg]; }
             set
             {
-                m_args[arg] = value;
+                if (string.IsNullOrWhiteSpace(value))
+                    m_args.Remove(arg);
+                else
+                    m_args[arg] = value;
+
                 ArgChanged?.Invoke(this, arg, value);
             }
         }

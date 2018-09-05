@@ -19,18 +19,39 @@ namespace raztalk.bot
             ApiKey = ini.Global["API_KEY"];
         }
 
+        public CleverBot()
+        {
+            ArgChanged += CleverBot_ArgChanged;
+        }
+
+        private void CleverBot_ArgChanged(Bot bot, string arg, string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            switch (arg)
+            {
+                case "add":
+                    var session = CleverbotSession.NewSession(ApiUser, ApiKey);
+                    Sessions.Add(value, session);
+                    this[arg] = null;
+                    this[value] = session.BotNick;
+                    break;
+
+                case "remove":
+                    Sessions.Remove(value);
+                    this[arg] = null;
+                    break;
+            }
+        }
+
         protected override void ConsumeMessage(string user, string message, DateTime timestamp)
         {
             CleverbotSession session;
-            if (!Sessions.TryGetValue(user, out session))
+            if (Sessions.TryGetValue(user, out session))
             {
-                session = CleverbotSession.NewSession(ApiUser, ApiKey);
-                Sessions.Add(user, session);
-                this[user] = session.BotNick;
+                session.SendAsync(message).ContinueWith(task => FireNewMessage("@" + user + ": " + task.Result));
             }
-
-            string result = session.Send(message);
-            FireNewMessage("@" + user + ": " + result);
         }
 
         public override void Dispose()
