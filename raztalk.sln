@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.cleverbot", "bo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.giphy", "bots\raztalk.bot.giphy\raztalk.bot.giphy.csproj", "{92619407-E00E-45FE-BCEA-06418E7B4105}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.imgur", "bots\raztalk.bot.imgur\raztalk.bot.imgur.csproj", "{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{92619407-E00E-45FE-BCEA-06418E7B4105}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92619407-E00E-45FE-BCEA-06418E7B4105}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92619407-E00E-45FE-BCEA-06418E7B4105}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
