@@ -65,8 +65,8 @@ namespace raztalk.Modules
 
         public bool Join(string token)
         {
-            Connection connection = Connection.Join(Context.ConnectionId, token);
-            if (connection != null && m_connections.TryAdd(Context.ConnectionId, connection))
+            Connection connection = Connection.Get(token);
+            if (connection != null && connection.Join(Context.ConnectionId) && m_connections.TryAdd(Context.ConnectionId, connection))
             {
                 Groups.Add(Context.ConnectionId, connection.Channel.Name);
 

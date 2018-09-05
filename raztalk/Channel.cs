@@ -191,8 +191,11 @@ namespace raztalk
             });
         }
 
-        private bool Login(User user, string password)
+        private bool Login(User user, string password, bool invited)
         {
+            if (InviteOnly && !invited)
+                throw new Exception("This channel is invite only!");
+
             lock (m_users)
             {
                 foreach (var u in m_users)
@@ -261,9 +264,7 @@ namespace raztalk
             {
                 try
                 {
-                    if (channel.InviteOnly && !invited)
-                        throw new Exception("This channel is invite only!");
-                    else if (channel.Login(user, channelpw))
+                    if (channel.Login(user, channelpw, invited))
                         return channel;
                     else
                         throw new Exception("Authentication to channel failed!");
