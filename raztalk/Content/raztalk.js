@@ -1,10 +1,11 @@
 ﻿$(document).ready(function () {
     var isActive = true;
     var unread = 0;
-    var lastMsgUser = "";
     var username = $("body").data("user");
     var channelname = $("body").data("channel");
     var channel = $.connection.channelHub;
+    var lastMsgUser = "";
+    var lastMsg = "";
     var lastMsgTimestamp = 0;
     var firstMsgSent = false;
 
@@ -98,6 +99,7 @@
         }
 
         lastMsgUser = user;
+        lastMsg = message;
         lastMsgTimestamp = timestamp;
     }
     function errorMsg(err) {
@@ -120,7 +122,8 @@
     });
 
     channel.client.send = function (user, message, timestamp) {
-        if (timestamp <= lastMsgTimestamp) return;
+        if (timestamp < lastMsgTimestamp) return;
+        if (timestamp == lastMsgTimestamp && message == lastMsg) return;
         displayMsg(user, message, timestamp);
     };
     channel.client.updateUsers = function (users) {
