@@ -47,6 +47,9 @@
            return user;
         }
     }
+    function scrollDown() {
+        $("html, body").scrollTop($(document).height());
+    }
     function displayMsg(user, message, timestamp) {
         var elapsedMs = timestamp - lastMsgTimestamp;
         if (elapsedMs > 120000) {
@@ -90,8 +93,10 @@
         });
 
         sr.reveal('.reveal');
+
+        scrollDown();
         msg.find("img, video, audio").on("load", function () {
-            $("html, body").scrollTop($(document).height());
+            scrollDown();
         });
 
         if (!isActive) {
