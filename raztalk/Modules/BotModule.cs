@@ -26,19 +26,18 @@ namespace raztalk.Modules
         {
             Get["available"] = ctx =>
             {
-                return BotManager.Available;
+                return BotManager.ClassNames("bots/");
             };
 
             Get["load"] = ctx =>
             {
-                BotManager.Load();
-                return BotManager.Available;
+                return BotManager.Load("bots/");
             };
 
             Get["unload"] = ctx =>
             {
-                BotManager.Unload();
-                return BotManager.Available;
+                BotManager.Unload("bots/");
+                return string.Empty;
             };
         }
     }
