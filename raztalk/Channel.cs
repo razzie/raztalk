@@ -19,6 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 using Microsoft.AspNet.SignalR;
 using raztalk.bot;
 using raztalk.Modules;
+using raztools;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -150,7 +151,7 @@ namespace raztalk
 
             m_cmdparser.Add("!bots", () =>
             {
-                Send("Bots available: " + BotManager.Available);
+                Send("Bots available: " + m_botmgr.Available);
                 Send("Bots enabled: " + m_botmgr.Current);
             });
 

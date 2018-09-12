@@ -17,69 +17,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using raztalk.bot;
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
+using raztools;
 using System.Runtime.Remoting;
 
 namespace raztalk
 {
-    public class BotManager : IDisposable
+    public class BotManager : PluginManager<Bot>
     {
-        static private SandboxDomain Domain { get; } = new SandboxDomain("bots/");
-
-        private ConcurrentDictionary<string, Bot> m_bots = new ConcurrentDictionary<string, Bot>();
-
-        static public string Available
+        public BotManager() : base("bots/")
         {
-            get
-            {
-                return string.Join(", ", Domain.Classes.Select(c => c.TypeNme).ToArray());
-            }
-        }
-
-        public string Current
-        {
-            get
-            {
-                return string.Join(", ", m_bots.Keys);
-            }
-        }
-
-        public Bot Add(string bot)
-        {
-            var newbot = Domain.Create(bot) as Bot;
-            if (newbot != null && m_bots.TryAdd(bot, newbot))
-            {
-                Domain.Unloaded += (sender, domain) => Remove(bot);
-                return newbot;
-            }
-
-            return null;
-        }
-
-        public Bot Get(string bot)
-        {
-            Bot tmp_bot = null;
-            m_bots.TryGetValue(bot, out tmp_bot);
-            return tmp_bot;
-        }
-
-        public bool Remove(string bot)
-        {
-            Bot tmp_bot;
-            if (m_bots.TryRemove(bot, out tmp_bot))
-            {
-                tmp_bot.Dispose();
-                return true;
-            }
-
-            return false;
         }
 
         public void ConsumeMessage(Message message)
         {
-            foreach (var bot in m_bots.ToArray())
+            foreach (var bot in Plugins.ToArray())
             {
                 if (message.User.IsBot || message.SystemMessage) continue;
 
@@ -90,34 +41,9 @@ namespace raztalk
                 catch (RemotingException)
                 {
                     Bot tmp_bot;
-                    m_bots.TryRemove(bot.Key, out tmp_bot);
+                    Plugins.TryRemove(bot.Key, out tmp_bot);
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            foreach (var bot in m_bots.Values)
-            {
-                try
-                {
-                    bot.Dispose();
-                }
-                catch (RemotingException)
-                {
-                }
-            }
-            m_bots.Clear();
-        }
-
-        static public void Load()
-        {
-            Domain.Load();
-        }
-
-        static public void Unload()
-        {
-            Domain.Unload();
         }
     }
 }
