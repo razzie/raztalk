@@ -111,8 +111,7 @@ namespace raztalk
                     SendInfo(User.Name + " left");
             }
 
-            Connection tmp_connection;
-            m_connections.TryRemove(Token, out tmp_connection);
+            m_connections.TryRemove(Token, out Connection tmp_connection);
 
             User = null;
             Channel = null;
@@ -152,8 +151,7 @@ namespace raztalk
             if (token == null)
                 return null;
 
-            Connection connection;
-            if (m_connections.TryGetValue(token, out connection))
+            if (m_connections.TryGetValue(token, out Connection connection))
             {
                 if (connection.State == ConnectionState.AccessGranted)
                 {

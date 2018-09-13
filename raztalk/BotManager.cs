@@ -40,8 +40,7 @@ namespace raztalk
                 }
                 catch (RemotingException)
                 {
-                    Bot tmp_bot;
-                    Plugins.TryRemove(bot.Key, out tmp_bot);
+                    Plugins.TryRemove(bot.Key, out Bot tmp_bot);
                 }
             }
         }
