@@ -41,8 +41,7 @@ namespace raztalk.Modules
 
         public bool Login(string username, string channelname, string channelpw, long last_timestamp)
         {
-            Connection connection;
-            if (m_connections.TryRemove(Context.ConnectionId, out connection))
+            if (m_connections.TryRemove(Context.ConnectionId, out Connection connection))
             {
                 connection.Close();
             }
@@ -86,8 +85,7 @@ namespace raztalk.Modules
 
         public override Task OnDisconnected(bool stopCalled)
         {
-            Connection connection;
-            if (m_connections.TryRemove(Context.ConnectionId, out connection))
+            if (m_connections.TryRemove(Context.ConnectionId, out Connection connection))
             {
                 Groups.Remove(Context.ConnectionId, connection.Channel.Name);
                 connection.Close();

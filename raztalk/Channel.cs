@@ -98,10 +98,7 @@ namespace raztalk
             HubGroup.Send(message.User.Name, message.Text, message.TimestampMs);
 
             if (m_messages.Count > MaxHistory)
-            {
-                Message tmp_message;
-                m_messages.TryDequeue(out tmp_message);
-            }
+                m_messages.TryDequeue(out Message tmp_message);
             
             if (text.StartsWith("!"))
                 m_cmdparser.Exec(text);
