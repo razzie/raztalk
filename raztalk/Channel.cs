@@ -54,11 +54,13 @@ namespace raztalk
             get { return Hub.Clients.Group(Name); }
         }
 
+        public event EventHandler<Message> Message;
+
         private List<User> m_users = new List<User>();
         private ConcurrentQueue<Message> m_messages = new ConcurrentQueue<Message>();
         private CommandParser m_cmdparser = new CommandParser();
-        private BotManager m_botmgr = new BotManager();
         private Timeout m_timeout = new Timeout();
+        private BotManager m_botmgr;
 
         private Channel(string channelname, string channelpw, User creator)
         {
@@ -70,6 +72,8 @@ namespace raztalk
                 throw new Exception("Internal channel error");
 
             m_timeout.Expired += TimeoutExpired;
+
+            m_botmgr = new BotManager(this);
 
             InitCommands();
         }
@@ -99,11 +103,11 @@ namespace raztalk
 
             if (m_messages.Count > MaxHistory)
                 m_messages.TryDequeue(out Message tmp_message);
-            
+
             if (text.StartsWith("!"))
                 m_cmdparser.Exec(text);
             else
-                m_botmgr.ConsumeMessage(message);
+                Message?.Invoke(this, message);
         }
 
         private void InitCommands()
@@ -158,7 +162,6 @@ namespace raztalk
                 if (newbot != null)
                 {
                     newbot.UserData = User.BotUser(bot);
-                    newbot.NewMessage += (sender, msg) => Send(sender.UserData as User, msg);
                     Send("Bot added");
                 }
             });
