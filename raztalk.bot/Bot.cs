@@ -18,55 +18,53 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace raztalk.bot
 {
     public abstract class Bot : MarshalByRefObject, IDisposable
     {
-        private Dictionary<string, string> m_args = new Dictionary<string, string>();
-
-        public delegate void NewMessageEvent(Bot bot, string message);
-        public delegate void ArgChangedEvent(Bot bot, string arg, string value);
-
-        public event NewMessageEvent NewMessage;
-        public event ArgChangedEvent ArgChanged;
-
+        protected Dictionary<string, string> Config { get; } = new Dictionary<string, string>();
+        protected ChannelConnector Connector { get; private set; }
         public object UserData { get; set; }
+
+        public Bot(ChannelConnector connector)
+        {
+            Connector = connector;
+        }
 
         public string this[string arg]
         {
-            get { return m_args[arg]; }
+            get { return Config[arg]; }
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    m_args.Remove(arg);
+                {
+                    Config.Remove(arg);
+                    OnConfigRemoved(arg);
+                }
                 else
-                    m_args[arg] = value;
-
-                ArgChanged?.Invoke(this, arg, value);
+                {
+                    Config[arg] = value;
+                    OnConfigChanged(arg, value);
+                }
             }
         }
 
-        public void ConsumeMessageAsync(string user, string message, DateTime timestamp)
+        protected virtual void OnConfigChanged(string arg, string value)
         {
-            Task.Factory.StartNew(() => ConsumeMessage(user, message, timestamp));
         }
 
-        protected virtual void ConsumeMessage(string user, string message, DateTime timestamp)
+        protected virtual void OnConfigRemoved(string arg)
         {
+        }
+
+        protected void Send(string message)
+        {
+            Connector?.Send(this, message);
         }
 
         public virtual void Dispose()
         {
-            m_args.Clear();
-            NewMessage = null;
-            ArgChanged = null;
-        }
-        
-        protected void FireNewMessage(string message)
-        {
-            NewMessage?.Invoke(this, message);
         }
     }
 }

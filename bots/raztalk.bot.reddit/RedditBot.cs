@@ -44,12 +44,11 @@ namespace raztalk.bot
             m_reddit = new Reddit(webagent, true);
         }
 
-        public RedditBot()
+        public RedditBot(ChannelConnector connector) : base(connector)
         {
-            ArgChanged += (bot, arg, value) => Configure(arg, value);
         }
 
-        private void Configure(string arg, string value)
+        protected override void OnConfigChanged(string arg, string value)
         {
             switch (arg)
             {
@@ -89,22 +88,22 @@ namespace raztalk.bot
                         cancel.Token.ThrowIfCancellationRequested();
 
                         if ((DateTime.Now - start) > TimeSpan.FromSeconds(10) && (!post.NSFW || m_nsfw))
-                            FireNewMessage(post.Title + "\n" + post.Url.AbsoluteUri);
+                            Send(post.Title + "\n" + post.Url.AbsoluteUri);
                     }
                 }
                 catch (OperationCanceledException)
                 {
-                    FireNewMessage("Thread canceled");
+                    Send("Thread canceled");
                     throw;
                 }
                 catch (Exception e)
                 {
                     for (; e.InnerException != null; e = e.InnerException) ;
-                    FireNewMessage(e.Message);
+                    Send(e.Message);
                 }
                 finally
                 {
-                    FireNewMessage("Thread ended");
+                    Send("Thread ended");
                     cancel.Dispose();
                 }
             });

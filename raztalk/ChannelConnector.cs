@@ -17,49 +17,40 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 */
 
 using raztalk.bot;
-using raztools;
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace raztalk
 {
-    public class BotManager : PluginManager<Bot>
+    public class ChannelConnector : bot.ChannelConnector
     {
-        private ChannelConnector m_connector;
+        private Channel m_channel;
 
-        static BotManager()
+        public override event MessageEvent Message;
+
+        public ChannelConnector(Channel channel)
         {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            m_channel = channel;
+            m_channel.Message += OnChannelMessage;
         }
 
-        static private FileInfo FindDLL(string dir, AssemblyName assembly)
+        private void OnChannelMessage(object sender, Message e)
         {
-            string dll = assembly.Name + ".dll";
-            return new DirectoryInfo(dir).GetFiles().FirstOrDefault(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
+            Message?.Invoke(e.User.Name, e.Text, e.Timestamp);
         }
 
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        ~ChannelConnector()
         {
-            var dll = FindDLL("bots/", new AssemblyName(args.Name));
-            if (dll != null)
-            {
-                return Assembly.LoadFile(dll.FullName);
-            }
-
-            return null;
+            Dispose();
         }
 
-        public BotManager(Channel channel) : base("bots/")
+        public override void Send(Bot bot, string text)
         {
-            m_connector = new ChannelConnector(channel);
+            m_channel.Send(bot.UserData as User, text);
         }
 
-        public override Bot Add(string plugin, params object[] _args)
+        public override void Dispose()
         {
-            var args = new object[] { m_connector }.Concat(_args).ToArray();
-            return base.Add(plugin, args);
+            Message = null;
+            m_channel = null;
         }
     }
 }

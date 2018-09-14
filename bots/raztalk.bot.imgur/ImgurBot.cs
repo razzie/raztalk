@@ -46,7 +46,12 @@ namespace raztalk.bot
             m_endpoint = new GalleryEndpoint(m_imgur);
         }
 
-        protected override void ConsumeMessage(string user, string message, DateTime timestamp)
+        public ImgurBot(ChannelConnector connector) : base(connector)
+        {
+            Connector.Message += OnMessage;
+        }
+
+        protected void OnMessage(string user, string message, DateTime timestamp)
         {
             if (message.StartsWith("@imgur ", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -54,7 +59,7 @@ namespace raztalk.bot
                 {
                     var results = task.Result;
                     var item = results.First() as GalleryImage;
-                    FireNewMessage("@" + user + ": " + item.Link);
+                    Send("@" + user + ": " + item.Link);
                 });
             }
         }

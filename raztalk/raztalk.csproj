@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotManager.cs" />
+    <Compile Include="ChannelConnector.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="CustomBootstrapper.cs" />
     <Compile Include="Channel.cs" />

@@ -37,12 +37,12 @@ namespace raztalk.bot
             ApiKey = ini.Global["API_KEY"];
         }
 
-        public CleverBot()
+        public CleverBot(ChannelConnector connector) : base(connector)
         {
-            ArgChanged += CleverBot_ArgChanged;
+            Connector.Message += OnMessage;
         }
 
-        private void CleverBot_ArgChanged(Bot bot, string arg, string value)
+        protected override void OnConfigChanged(string arg, string value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 return;
@@ -63,12 +63,12 @@ namespace raztalk.bot
             }
         }
 
-        protected override void ConsumeMessage(string user, string message, DateTime timestamp)
+        private void OnMessage(string user, string message, DateTime timestamp)
         {
             CleverbotSession session;
             if (Sessions.TryGetValue(user, out session))
             {
-                session.SendAsync(message).ContinueWith(task => FireNewMessage("@" + user + ": " + task.Result));
+                session.SendAsync(message).ContinueWith(task => Send("@" + user + ": " + task.Result));
             }
         }
 

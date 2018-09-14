@@ -38,9 +38,9 @@ namespace raztalk.bot
             m_giphy = new Giphy(ApiKey);
         }
 
-        public GiphyBot()
+        public GiphyBot(ChannelConnector connector) : base(connector)
         {
-            ArgChanged += GiphyBot_ArgChanged;
+            Connector.Message += OnMessage;
 
             m_timer = new Timer();
             m_timer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
@@ -48,7 +48,7 @@ namespace raztalk.bot
             m_timer.AutoReset = true;
         }
 
-        private void GiphyBot_ArgChanged(Bot bot, string arg, string value)
+        protected override void OnConfigChanged(string arg, string value)
         {
             switch (arg)
             {
@@ -71,11 +71,11 @@ namespace raztalk.bot
             };
             m_giphy.TrendingGifs(trending).ContinueWith(task => {
                 var results = task.Result.Data;
-                FireNewMessage(results[0].Images.Original.Url);
+                Send(results[0].Images.Original.Url);
             });
         }
 
-        protected override void ConsumeMessage(string user, string message, DateTime timestamp)
+        protected void OnMessage(string user, string message, DateTime timestamp)
         {
             if (message.StartsWith("@giphy ", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -83,7 +83,7 @@ namespace raztalk.bot
                 {
                     Tag = message.Substring(7)
                 };
-                m_giphy.RandomGif(search).ContinueWith(task => FireNewMessage("@" + user + ": " + task.Result.Data.ImageUrl));
+                m_giphy.RandomGif(search).ContinueWith(task => Send("@" + user + ": " + task.Result.Data.ImageUrl));
             }
         }
 
