@@ -112,7 +112,7 @@ namespace raztalk
 
         private void InitCommands()
         {
-            m_cmdparser.Exceptions += (o, e) => Send(e.Message);
+            m_cmdparser.Exceptions += CommandParserExceptions;
 
             m_cmdparser.Add("!help", () => Send(string.Join("\n", m_cmdparser.Commands)));
 
@@ -192,6 +192,12 @@ namespace raztalk
                     Send(tmp_bot[arg]);
                 }
             });
+        }
+
+        private void CommandParserExceptions(object sender, Exception e)
+        {
+            Send(e.Message);
+            Send(e.StackTrace);
         }
 
         private bool Login(User user, string password, bool invited)
