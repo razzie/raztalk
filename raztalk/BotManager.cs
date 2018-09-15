@@ -18,38 +18,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using raztalk.bot;
 using raztools;
-using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace raztalk
 {
     public class BotManager : PluginManager<Bot>
     {
         private ChannelConnector m_connector;
-
-        static BotManager()
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-        }
-
-        static private FileInfo FindDLL(string dir, AssemblyName assembly)
-        {
-            string dll = assembly.Name + ".dll";
-            return new DirectoryInfo(dir).GetFiles().FirstOrDefault(f => f.Name.Equals(dll, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var dll = FindDLL("bots/", new AssemblyName(args.Name));
-            if (dll != null)
-            {
-                return Assembly.LoadFile(dll.FullName);
-            }
-
-            return null;
-        }
 
         public BotManager(Channel channel) : base("bots/")
         {
