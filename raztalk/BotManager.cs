@@ -24,7 +24,7 @@ namespace raztalk
 {
     public class BotManager : PluginManager<Bot>
     {
-        private ChannelConnector m_connector;
+        private readonly bot.ChannelConnector m_connector;
 
         public BotManager(Channel channel) : base("bots/")
         {
