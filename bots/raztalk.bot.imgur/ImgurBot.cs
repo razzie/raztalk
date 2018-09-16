@@ -31,8 +31,8 @@ namespace raztalk.bot
     {
         static private string ClientID { get; set; }
         static private string ClientSecret { get; set; }
-        static private IImgurClient m_imgur;
-        static private IGalleryEndpoint m_endpoint;
+        private IImgurClient m_imgur;
+        private IGalleryEndpoint m_endpoint;
 
         static ImgurBot()
         {
@@ -41,13 +41,13 @@ namespace raztalk.bot
 
             ClientID = ini.Global["CLIENT_ID"];
             ClientSecret = ini.Global["CLIENT_SECRET"];
-
-            m_imgur = new ImgurClient(ClientID, ClientSecret);
-            m_endpoint = new GalleryEndpoint(m_imgur);
         }
 
         public ImgurBot(ChannelConnector connector) : base(connector)
         {
+            m_imgur = new ImgurClient(ClientID, ClientSecret);
+            m_endpoint = new GalleryEndpoint(m_imgur);
+
             Connector.Message += OnMessage;
         }
 
