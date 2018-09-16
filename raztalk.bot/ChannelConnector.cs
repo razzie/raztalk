@@ -27,5 +27,10 @@ namespace raztalk.bot
         public abstract event MessageEvent Message;
         public abstract void Send(Bot bot, string text);
         public abstract void Dispose();
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }
