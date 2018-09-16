@@ -66,5 +66,10 @@ namespace raztalk.bot
         public virtual void Dispose()
         {
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }
