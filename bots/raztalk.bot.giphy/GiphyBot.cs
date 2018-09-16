@@ -26,7 +26,7 @@ namespace raztalk.bot
     public class GiphyBot : Bot
     {
         static private string ApiKey { get; set; }
-        static private Giphy m_giphy;
+        private Giphy m_giphy;
         private Timer m_timer;
 
         static GiphyBot()
@@ -35,11 +35,12 @@ namespace raztalk.bot
             var ini = parser.ReadFile("bots/giphybot.ini");
             
             ApiKey = ini.Global["API_KEY"];
-            m_giphy = new Giphy(ApiKey);
         }
 
         public GiphyBot(ChannelConnector connector) : base(connector)
         {
+            m_giphy = new Giphy(ApiKey);
+
             Connector.Message += OnMessage;
 
             m_timer = new Timer();

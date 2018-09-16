@@ -25,7 +25,12 @@ namespace raztalk.bot
 {
     public class RedditBot : Bot
     {
-        static private Reddit m_reddit;
+        static private string Username { get; set; }
+        static private string Password { get; set; }
+        static private string ClientID { get; set; }
+        static private string ClientSecret { get; set; }
+        static private string RedirectUri { get; set; }
+        private Reddit m_reddit;
         private CancellationTokenSource m_cancel;
         private bool m_nsfw = false;
 
@@ -34,18 +39,17 @@ namespace raztalk.bot
             var parser = new IniParser.FileIniDataParser();
             var ini = parser.ReadFile("bots/redditbot.ini");
 
-            var username = ini.Global["USERNAME"];
-            var password = ini.Global["PASSWORD"];
-            var clientID = ini.Global["CLIENT_ID"];
-            var clientSecret = ini.Global["CLIENT_SECRET"];
-            var redirectUri = ini.Global["REDIRECT_URI"];
-
-            var webagent = new BotWebAgent(username, password, clientID, clientSecret, redirectUri);
-            m_reddit = new Reddit(webagent, true);
+            Username = ini.Global["USERNAME"];
+            Password = ini.Global["PASSWORD"];
+            ClientID = ini.Global["CLIENT_ID"];
+            ClientSecret = ini.Global["CLIENT_SECRET"];
+            RedirectUri = ini.Global["REDIRECT_URI"];
         }
 
         public RedditBot(ChannelConnector connector) : base(connector)
         {
+            var webagent = new BotWebAgent(Username, Password, ClientID, ClientSecret, RedirectUri);
+            m_reddit = new Reddit(webagent, true);
         }
 
         protected override void OnConfigChanged(string arg, string value)
