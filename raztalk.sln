@@ -5,6 +5,7 @@ VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk", "raztalk\raztalk.csproj", "{F454A4D9-1904-4722-88B2-5BCBF999A85E}"
 	ProjectSection(ProjectDependencies) = postProject
+		{31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C} = {31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C}
 		{198DDFC4-E460-4F11-B63B-C2302D47916B} = {198DDFC4-E460-4F11-B63B-C2302D47916B}
 	EndProjectSection
 EndProject
@@ -19,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.giphy", "bots\raztalk.bot.giphy\raztalk.bot.giphy.csproj", "{92619407-E00E-45FE-BCEA-06418E7B4105}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztalk.bot.imgur", "bots\raztalk.bot.imgur\raztalk.bot.imgur.csproj", "{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "raztools", "raztools\raztools\raztools.csproj", "{31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +57,10 @@ Global
 		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88DB2A26-CF6A-42FD-B22F-CB08E48AE5C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31D0C9C1-7E6A-4FC6-84D1-DD8174EE836C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
