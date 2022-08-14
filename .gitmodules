@@ -1,3 +1,3 @@
 [submodule "raztools"]
 	path = raztools
-	url = git://github.com/razzie/raztools.git
+	url = https://github.com/razzie/raztools.git
