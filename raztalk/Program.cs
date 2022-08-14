@@ -18,6 +18,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 
 using Microsoft.Owin.Hosting;
 using System;
+using System.Threading;
 
 namespace raztalk
 {
@@ -25,10 +26,11 @@ namespace raztalk
     {
         static void Main(string[] args)
         {
-            using (WebApp.Start<Startup>("http://127.0.0.1:8888"))
+            var addr = (args.Length > 0) ? args[0] : "http://127.0.0.1:8080";
+
+            using (WebApp.Start<Startup>(addr))
             {
-                Console.WriteLine("Press enter to exit");
-                Console.ReadLine();
+                Thread.Sleep(Timeout.Infinite);
             }
         }
     }
